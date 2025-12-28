@@ -1,3 +1,4 @@
+
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 
 export interface IRate {

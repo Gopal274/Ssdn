@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, Fragment } from 'react';
@@ -71,15 +72,14 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
   
   const hasHistory = product.rateHistory && product.rateHistory.length > 0;
 
-  const formatDate = (dateString?: Date | string) => {
+  const formatDate = (dateString?: string | Date) => {
     if (!dateString) return '-';
     // If it's a date object from history, format it. Otherwise, display the string.
     if (dateString instanceof Date) {
-      return dateString.toLocaleDateString();
+      return new Date(dateString).toLocaleDateString();
     }
     return dateString;
   }
-
 
   if (!product.currentRate) {
      // This case should ideally not happen with good data, but it's a safeguard.
@@ -156,7 +156,7 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
           {product.currentRate.finalRate.toFixed(2)}
         </TableCell>
         <TableCell>{product.currentRate.partyName}</TableCell>
-        <TableCell>{formatDate(product.currentRate.billDate)}</TableCell>
+        <TableCell>{product.currentRate.billDate || '-'}</TableCell>
         <TableCell>{product.currentRate.pageNo || '-'}</TableCell>
         <TableCell className="text-center">
           <div className="flex items-center justify-center space-x-1">
