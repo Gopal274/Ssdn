@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import type { IProduct } from '@/models/Product';
 import {
   Collapsible,
@@ -65,7 +65,7 @@ export function ProductTableRow({ product, index, onRateUpdated }: ProductTableR
 
   return (
     <Collapsible asChild key={product._id} open={isHistoryOpen} onOpenChange={setHistoryOpen}>
-      <>
+      <Fragment>
         <TableRow className={cn('font-medium', isHistoryOpen && 'border-b-0')}>
           <TableCell className="sticky left-0 bg-card">
             {hasHistory && (
@@ -128,7 +128,7 @@ export function ProductTableRow({ product, index, onRateUpdated }: ProductTableR
             </TableRow>
           </CollapsibleContent>
         )}
-      </>
+      </Fragment>
     </Collapsible>
   );
 }
