@@ -234,8 +234,10 @@ export default function ProductTable() {
       <CardContent>
         <div className="rounded-md border overflow-x-auto">
           <style jsx>{`
-            [data-radix-scroll-area-viewport] {
-              -webkit-overflow-scrolling: touch;
+            @media print {
+                .card-content-print {
+                    padding: 0;
+                }
             }
           `}</style>
             <Table>
@@ -267,6 +269,7 @@ export default function ProductTable() {
                         <DropdownMenuItem onClick={() => requestSort('productName', 'desc')}>
                           Sort Z-A
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => requestSort('updatedAt', 'desc')}>
                           Sort by Newest
                         </DropdownMenuItem>
