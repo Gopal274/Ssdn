@@ -17,8 +17,8 @@ export default function Dashboard() {
       <main className="p-4 md:p-6 lg:p-8">
         <Tabs defaultValue="register" className="w-full">
           <TabsList className="grid w-full grid-cols-2 sm:w-[400px] mb-4 no-print">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="register">Register</TabsTrigger>
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           </TabsList>
           <TabsContent value="dashboard">
              <Suspense fallback={<Loading />}>
