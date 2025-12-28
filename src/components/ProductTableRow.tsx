@@ -74,11 +74,15 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
 
   const formatDate = (dateString?: string | Date) => {
     if (!dateString) return '-';
-    // If it's a date object from history, format it. Otherwise, display the string.
-    if (dateString instanceof Date) {
-      return new Date(dateString).toLocaleDateString();
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return dateString.toString();
+      }
+      return date.toLocaleDateString();
+    } catch (e) {
+      return dateString.toString();
     }
-    return dateString;
   }
 
   if (!product.currentRate) {
@@ -87,7 +91,7 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
         <TableRow>
             <TableCell>{index + 1}</TableCell>
             <TableCell>{product.productName}</TableCell>
-            <TableCell colSpan={7} className="text-muted-foreground">Product data is incomplete.</TableCell>
+            <TableCell colSpan={8} className="text-muted-foreground">Product data is incomplete.</TableCell>
              <TableCell className="text-center">
                 <div className="flex items-center justify-center space-x-1">
                   <Dialog open={isUpdateModalOpen} onOpenChange={setUpdateModalOpen}>
@@ -156,7 +160,7 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
           {product.currentRate.finalRate.toFixed(2)}
         </TableCell>
         <TableCell>{product.currentRate.partyName}</TableCell>
-        <TableCell>{product.currentRate.billDate || '-'}</TableCell>
+        <TableCell>{formatDate(product.currentRate.billDate)}</TableCell>
         <TableCell>{product.currentRate.pageNo || '-'}</TableCell>
         <TableCell className="text-center">
           <div className="flex items-center justify-center space-x-1">

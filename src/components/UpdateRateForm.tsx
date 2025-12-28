@@ -32,15 +32,20 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const formatDateForInput = (date: Date | string | undefined) => {
+  const formatDateForDisplay = (date: Date | string | undefined) => {
     if (!date) return '';
-    if (typeof date === 'string') return date;
-    // Basic formatting, you might want to use a library like date-fns for more robust formatting
-    const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}/${month}/${year}`;
+    // If it's a date object, format it. Otherwise, assume it's already a string like 'DD/MM/YYYY'
+    try {
+      const d = new Date(date);
+      // Check if date is valid
+      if (isNaN(d.getTime())) return typeof date === 'string' ? date : '';
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    } catch (e) {
+      return typeof date === 'string' ? date : '';
+    }
   }
 
   const form = useForm<FormValues>({
@@ -49,7 +54,7 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
       rate: product.currentRate?.rate ?? 0,
       gst: product.currentRate?.gst ?? 0,
       partyName: product.currentRate?.partyName ?? '',
-      billDate: formatDateForInput(product.currentRate?.billDate) ?? '',
+      billDate: formatDateForDisplay(product.currentRate?.billDate) ?? '',
       pageNo: product.currentRate?.pageNo ?? '',
     },
   });
@@ -96,7 +101,7 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
                     <span>GST: {product.currentRate.gst.toFixed(2)}%</span>
                     <span>Final: {product.currentRate.finalRate.toFixed(2)}</span>
                     <span>Party: {product.currentRate.partyName}</span>
-                    {product.currentRate.billDate && <span>Bill Date: {formatDateForInput(product.currentRate.billDate)}</span>}
+                    {product.currentRate.billDate && <span>Bill Date: {formatDateForDisplay(product.currentRate.billDate)}</span>}
                     {product.currentRate.pageNo && <span>Page No: {product.currentRate.pageNo}</span>}
                 </div>
             </CardContent>
