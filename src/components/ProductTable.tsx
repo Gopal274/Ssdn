@@ -32,6 +32,8 @@ import { AddProductForm } from './AddProductForm';
 type SortKey = 'productName' | 'updatedAt';
 type SortDirection = 'asc' | 'desc';
 
+const GST_SLABS = [0, 5, 12, 18, 28];
+
 export const dynamic = 'force-dynamic';
 
 export default function ProductTable() {
@@ -42,6 +44,7 @@ export default function ProductTable() {
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: SortDirection }>({ key: 'updatedAt', direction: 'desc' });
   const [partyNameFilter, setPartyNameFilter] = useState<string[]>([]);
   const [partyNameSearch, setPartyNameSearch] = useState('');
+  const [gstFilter, setGstFilter] = useState<number[]>([]);
   
   const uniquePartyNames = useMemo(() => {
     const names = products
@@ -89,6 +92,13 @@ export default function ProductTable() {
       );
     }
 
+    // Apply GST filter
+    if (gstFilter.length > 0) {
+      sortableProducts = sortableProducts.filter(p =>
+        p.currentRate?.gst !== undefined && gstFilter.includes(p.currentRate.gst)
+      );
+    }
+
     // Apply sorting
     if (sortConfig.key) {
       sortableProducts.sort((a, b) => {
@@ -112,7 +122,7 @@ export default function ProductTable() {
       });
     }
     return sortableProducts;
-  }, [products, sortConfig, partyNameFilter]);
+  }, [products, sortConfig, partyNameFilter, gstFilter]);
 
 
   const handleProductAdded = () => {
@@ -137,6 +147,14 @@ export default function ProductTable() {
       prev.includes(partyName) 
         ? prev.filter(p => p !== partyName)
         : [...prev, partyName]
+    );
+  };
+  
+  const handleGstFilterChange = (gstSlab: number) => {
+    setGstFilter(prev =>
+      prev.includes(gstSlab)
+        ? prev.filter(g => g !== gstSlab)
+        : [...prev, gstSlab]
     );
   };
 
@@ -208,7 +226,46 @@ export default function ProductTable() {
                   </TableHead>
                   <TableHead className="text-right font-bold text-foreground">Rate</TableHead>
                   <TableHead className="font-bold text-foreground">Unit</TableHead>
-                  <TableHead className="text-right font-bold text-foreground">GST %</TableHead>
+                  <TableHead className="text-right font-bold text-foreground">
+                    <div className='flex items-center justify-end gap-1'>
+                       GST %
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7">
+                              <Filter className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent 
+                          align="end" 
+                          onCloseAutoFocus={(e) => e.preventDefault()}
+                        >
+                          <DropdownMenuLabel>Filter by GST Slab</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                           {GST_SLABS.map(slab => (
+                              <DropdownMenuCheckboxItem
+                                key={slab}
+                                checked={gstFilter.includes(slab)}
+                                onSelect={(e) => e.preventDefault()}
+                                onClick={() => handleGstFilterChange(slab)}
+                              >
+                                {slab}% {slab === 0 && '(Tax Free)'}
+                              </DropdownMenuCheckboxItem>
+                          ))}
+                          {gstFilter.length > 0 && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onSelect={() => setGstFilter([])}
+                                className="text-destructive"
+                              >
+                                Clear GST filter
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </TableHead>
                   <TableHead className="text-right font-bold text-foreground">Final Rate</TableHead>
                   <TableHead className="font-bold text-foreground">
                     <div className='flex items-center gap-1'>
