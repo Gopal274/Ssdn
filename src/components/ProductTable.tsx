@@ -19,6 +19,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ProductTableRow } from './ProductTableRow';
 import { AddProductForm } from './AddProductForm';
 
+export const dynamic = 'force-dynamic';
+
 export default function ProductTable() {
   const [products, setProducts] = useState<IProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,7 +32,8 @@ export default function ProductTable() {
     try {
       const res = await fetch('/api/products', { cache: 'no-store' });
       if (!res.ok) {
-        throw new Error('Failed to fetch products');
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to fetch products');
       }
       const data = await res.json();
       setProducts(data.data);
@@ -81,15 +84,20 @@ export default function ProductTable() {
       </CardHeader>
       <CardContent>
         <div className="rounded-md border overflow-x-auto">
-            <Table className="min-w-[800px]">
-              {!loading && products.length === 0 && (
+            <Table>
+              {!loading && !error && products.length === 0 && (
                 <TableCaption>
-                  {error ? `Error: ${error}` : 'No products found. Add one to get started!'}
+                  No products found. Add one to get started!
+                </TableCaption>
+              )}
+               {error && (
+                <TableCaption className='text-destructive'>
+                  Error loading products: {error}
                 </TableCaption>
               )}
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[50px]">S.No</TableHead>
+                  <TableHead className="w-[100px]">S.No</TableHead>
                   <TableHead>Product Name</TableHead>
                   <TableHead className="text-right">Rate</TableHead>
                   <TableHead>Unit</TableHead>
