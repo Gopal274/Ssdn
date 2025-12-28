@@ -26,6 +26,7 @@ import { Button } from '@/components/ui/button';
 import { PlusSquare, Trash2 } from 'lucide-react';
 import { UpdateRateForm } from './UpdateRateForm';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface ProductTableRowProps {
   product: IProduct;
@@ -69,26 +70,46 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
   const hasHistory = product.rateHistory && product.rateHistory.length > 0;
 
   if (!product.currentRate) {
-    // This case should ideally not happen with valid data, but it's a good safeguard.
      return (
         <TableRow>
             <TableCell>{index + 1}</TableCell>
             <TableCell>{product.productName}</TableCell>
             <TableCell colSpan={5} className="text-muted-foreground">Product data is incomplete.</TableCell>
              <TableCell className="text-center">
-                <Dialog open={isUpdateModalOpen} onOpenChange={setUpdateModalOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      Add Rate
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[480px]">
-                    <DialogHeader>
-                      <DialogTitle className='font-headline'>Update Rate for {product.productName}</DialogTitle>
-                    </DialogHeader>
-                    <UpdateRateForm product={product} onRateUpdated={handleUpdateSuccess} />
-                  </DialogContent>
-                </Dialog>
+                <div className="flex items-center justify-center space-x-1">
+                  <Dialog open={isUpdateModalOpen} onOpenChange={setUpdateModalOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        Add Rate
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[480px]">
+                      <DialogHeader>
+                        <DialogTitle className='font-headline'>Update Rate for {product.productName}</DialogTitle>
+                      </DialogHeader>
+                      <UpdateRateForm product={product} onRateUpdated={handleUpdateSuccess} />
+                    </DialogContent>
+                  </Dialog>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="icon" title="Delete Product">
+                        <Trash2 className="h-5 w-5 text-destructive" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete the product "{product.productName}" and all of its rate history.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
             </TableCell>
         </TableRow>
     );
@@ -110,43 +131,45 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
           {product.currentRate.finalRate.toFixed(2)}
         </TableCell>
         <TableCell>{product.currentRate.partyName}</TableCell>
-        <TableCell className="text-center space-x-1">
-          <Dialog open={isUpdateModalOpen} onOpenChange={setUpdateModalOpen}>
-            <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" title="Update Rate">
-                <PlusSquare className="h-5 w-5 text-green-700" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[480px]">
-              <DialogHeader>
-                <DialogTitle className='font-headline'>Update Rate for {product.productName}</DialogTitle>
-              </DialogHeader>
-              <UpdateRateForm product={product} onRateUpdated={handleUpdateSuccess} />
-            </DialogContent>
-          </Dialog>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" title="Delete Product">
-                <Trash2 className="h-5 w-5 text-destructive" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the product "{product.productName}" and all of its rate history.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+        <TableCell className="text-center">
+          <div className="flex items-center justify-center space-x-1">
+            <Dialog open={isUpdateModalOpen} onOpenChange={setUpdateModalOpen}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" title="Update Rate">
+                  <PlusSquare className="h-5 w-5 text-green-600" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[480px]">
+                <DialogHeader>
+                  <DialogTitle className='font-headline'>Update Rate for {product.productName}</DialogTitle>
+                </DialogHeader>
+                <UpdateRateForm product={product} onRateUpdated={handleUpdateSuccess} />
+              </DialogContent>
+            </Dialog>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="icon" title="Delete Product">
+                  <Trash2 className="h-5 w-5 text-destructive" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the product "{product.productName}" and all of its rate history.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </TableCell>
       </TableRow>
       {hasHistory && product.rateHistory.map((history, i) => (
-        <TableRow key={`${product._id}-history-${i}`} className="bg-muted/30 text-muted-foreground hover:bg-muted/40 text-xs">
+        <TableRow key={`${product._id}-history-${i}`} className="text-muted-foreground text-xs">
           <TableCell></TableCell>
           <TableCell>
             <span className="pl-4">↳ {new Date(history.updatedAt).toLocaleDateString()}</span>
