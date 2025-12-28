@@ -77,49 +77,51 @@ export default function ProductTable() {
         </div>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="w-full whitespace-nowrap rounded-md border">
-          <Table>
-            {!loading && products.length === 0 && (
-              <TableCaption>
-                {error ? `Error: ${error}` : 'No products found. Add one to get started!'}
-              </TableCaption>
-            )}
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-12 sticky left-0 bg-card"></TableHead>
-                <TableHead className="w-[50px]">S.No</TableHead>
-                <TableHead>Product Name</TableHead>
-                <TableHead className="text-right">Rate</TableHead>
-                <TableHead>Unit</TableHead>
-                <TableHead className="text-right">GST %</TableHead>
-                <TableHead className="text-right font-bold">Final Rate</TableHead>
-                <TableHead>Party Name</TableHead>
-                <TableHead className="text-center">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={9} className="h-24 text-center">
-                    <div className="flex justify-center items-center">
-                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                      <span className="ml-2">Loading ledger...</span>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                products.map((product, index) => (
-                  <ProductTableRow
-                    key={product._id}
-                    product={product}
-                    index={index}
-                    onRateUpdated={handleRateUpdated}
-                  />
-                ))
+        <div className="rounded-md border">
+          <ScrollArea className="w-full whitespace-nowrap">
+            <Table>
+              {!loading && products.length === 0 && (
+                <TableCaption>
+                  {error ? `Error: ${error}` : 'No products found. Add one to get started!'}
+                </TableCaption>
               )}
-            </TableBody>
-          </Table>
-        </ScrollArea>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12 sticky left-0 bg-card/80 backdrop-blur-sm"></TableHead>
+                  <TableHead className="w-[50px]">S.No</TableHead>
+                  <TableHead>Product Name</TableHead>
+                  <TableHead className="text-right">Rate</TableHead>
+                  <TableHead>Unit</TableHead>
+                  <TableHead className="text-right">GST %</TableHead>
+                  <TableHead className="text-right font-bold">Final Rate</TableHead>
+                  <TableHead>Party Name</TableHead>
+                  <TableHead className="text-center">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={9} className="h-24 text-center">
+                      <div className="flex justify-center items-center">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        <span className="ml-2">Loading ledger...</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  products.map((product, index) => (
+                    <ProductTableRow
+                      key={product._id}
+                      product={product}
+                      index={index}
+                      onRateUpdated={handleRateUpdated}
+                    />
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+        </div>
       </CardContent>
     </Card>
   );
