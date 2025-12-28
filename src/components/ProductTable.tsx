@@ -25,6 +25,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { ProductTableRow } from './ProductTableRow';
 import { AddProductForm } from './AddProductForm';
 
@@ -40,6 +41,7 @@ export default function ProductTable() {
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: SortDirection }>({ key: 'updatedAt', direction: 'desc' });
   const [partyNameFilter, setPartyNameFilter] = useState<string[]>([]);
+  const [partyNameSearch, setPartyNameSearch] = useState('');
   
   const uniquePartyNames = useMemo(() => {
     const names = products
@@ -47,6 +49,12 @@ export default function ProductTable() {
       .filter((name): name is string => !!name);
     return [...new Set(names)].sort((a, b) => a.localeCompare(b));
   }, [products]);
+
+  const filteredPartyNames = useMemo(() => {
+    return uniquePartyNames.filter(name => 
+      name.toLowerCase().includes(partyNameSearch.toLowerCase())
+    );
+  }, [uniquePartyNames, partyNameSearch]);
 
 
   const fetchProducts = useCallback(async () => {
@@ -211,10 +219,22 @@ export default function ProductTable() {
                               <Filter className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start">
+                        <DropdownMenuContent 
+                          align="start" 
+                          className="w-[250px]"
+                          onCloseAutoFocus={(e) => e.preventDefault()}
+                        >
                           <DropdownMenuLabel>Filter by Party</DropdownMenuLabel>
+                          <div className="px-2 pb-2">
+                             <Input
+                                placeholder="Search party..."
+                                value={partyNameSearch}
+                                onChange={(e) => setPartyNameSearch(e.target.value)}
+                                className="h-8"
+                              />
+                          </div>
                           <DropdownMenuSeparator />
-                           {uniquePartyNames.map(partyName => (
+                           {filteredPartyNames.map(partyName => (
                               <DropdownMenuCheckboxItem
                                 key={partyName}
                                 checked={partyNameFilter.includes(partyName)}
@@ -224,11 +244,19 @@ export default function ProductTable() {
                                 {partyName}
                               </DropdownMenuCheckboxItem>
                           ))}
+                           {filteredPartyNames.length === 0 && partyNameSearch !== '' && (
+                            <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                              No party found.
+                            </div>
+                          )}
                           {partyNameFilter.length > 0 && (
                             <>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onSelect={() => setPartyNameFilter([])}
+                                onSelect={() => {
+                                  setPartyNameFilter([]);
+                                  setPartyNameSearch('');
+                                }}
                                 className="text-destructive"
                               >
                                 Clear filters
