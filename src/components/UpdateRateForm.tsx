@@ -150,6 +150,7 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
+                        type="button"
                         variant={"outline"}
                         className={cn(
                           "w-full pl-3 text-left font-normal",
@@ -157,7 +158,7 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
                         )}
                       >
                         {field.value ? (
-                          format(field.value, "PPP")
+                          format(field.value, "dd/MM/yy")
                         ) : (
                           <span>Pick a date</span>
                         )}

@@ -165,6 +165,7 @@ export function AddProductForm({ onProductAdded }: AddProductFormProps) {
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
+                        type="button"
                         variant={"outline"}
                         className={cn(
                           "w-full pl-3 text-left font-normal",
@@ -172,7 +173,7 @@ export function AddProductForm({ onProductAdded }: AddProductFormProps) {
                         )}
                       >
                         {field.value ? (
-                          format(field.value, "PPP")
+                          format(field.value, "dd/MM/yy")
                         ) : (
                           <span>Pick a date</span>
                         )}
