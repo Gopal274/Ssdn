@@ -64,7 +64,7 @@ export function ProductTableRow({ product, index, onRateUpdated }: ProductTableR
   }
 
   return (
-    <Collapsible asChild key={product._id} open={isHistoryOpen} onOpenChange={setHistoryOpen}>
+    <Collapsible key={product._id} open={isHistoryOpen} onOpenChange={setHistoryOpen} asChild>
       <Fragment>
         <TableRow className={cn('font-medium', isHistoryOpen && 'border-b-0')}>
           <TableCell className="sticky left-0 bg-card">
