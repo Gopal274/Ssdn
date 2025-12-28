@@ -52,7 +52,7 @@ export function AddProductForm({ onProductAdded }: AddProductFormProps) {
         billDate: values.billDate || undefined,
         pageNo: values.pageNo || undefined,
     };
-
+    
     try {
       const response = await fetch('/api/product', {
         method: 'POST',
@@ -60,7 +60,7 @@ export function AddProductForm({ onProductAdded }: AddProductFormProps) {
         body: JSON.stringify(payload),
       });
       const result = await response.json();
-
+      
       if (!response.ok) {
         throw new Error(result.message || 'Something went wrong');
       }
@@ -99,90 +99,90 @@ export function AddProductForm({ onProductAdded }: AddProductFormProps) {
           )}
         />
         <div className="grid grid-cols-2 gap-4">
-            <FormField
+          <FormField
             control={form.control}
             name="rate"
             render={({ field }) => (
-                <FormItem>
+              <FormItem>
                 <FormLabel>Rate</FormLabel>
                 <FormControl>
-                    <Input type="number" step="0.01" placeholder="0.00" {...field} />
+                  <Input type="number" step="0.01" placeholder="0.00" {...field} />
                 </FormControl>
                 <FormMessage />
-                </FormItem>
+              </FormItem>
             )}
-            />
-            <FormField
+          />
+          <FormField
             control={form.control}
             name="gst"
             render={({ field }) => (
-                <FormItem>
+              <FormItem>
                 <FormLabel>GST %</FormLabel>
                 <FormControl>
-                    <Input type="number" step="0.01" placeholder="0.00" {...field} />
+                  <Input type="number" step="0.01" placeholder="0.00" {...field} />
                 </FormControl>
                 <FormMessage />
-                </FormItem>
+              </FormItem>
             )}
-            />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-              control={form.control}
-              name="unit"
-              render={({ field }) => (
-                  <FormItem>
-                  <FormLabel>Unit</FormLabel>
-                  <FormControl>
-                      <Input placeholder="e.g., Kg, Pkt" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                  </FormItem>
-              )}
-          />
-          <FormField
-              control={form.control}
-              name="partyName"
-              render={({ field }) => (
-                  <FormItem>
-                  <FormLabel>Party Name</FormLabel>
-                  <FormControl>
-                      <Input placeholder="e.g., Sharma Traders" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                  </FormItem>
-              )}
           />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <FormField
-              control={form.control}
-              name="billDate"
-              render={({ field }) => (
-                  <FormItem>
-                  <FormLabel>Bill Date</FormLabel>
-                  <FormControl>
-                      <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                  </FormItem>
-              )}
+            control={form.control}
+            name="unit"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Unit</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., Kg, Pkt" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
           <FormField
-              control={form.control}
-              name="pageNo"
-              render={({ field }) => (
-                  <FormItem>
-                  <FormLabel>Page No.</FormLabel>
-                  <FormControl>
-                      <Input placeholder="e.g., F-12, 23" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                  </FormItem>
-              )}
+            control={form.control}
+            name="partyName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Party Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., Sharma Traders" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
         </div>
-
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="billDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Bill Date</FormLabel>
+                <FormControl>
+                  <Input type="text" placeholder="e.g. 12/12/2024" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="pageNo"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Page No.</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., F-12, 23" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
         <Button type="submit" disabled={isSubmitting} className="w-full mt-4">
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Add Product
