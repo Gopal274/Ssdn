@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2 } from 'lucide-react';
 import type { IProduct } from '@/models/Product';
-import { calculateFinalRate } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -17,7 +16,6 @@ const formSchema = z.object({
   rate: z.coerce.number().positive('Rate must be a positive number.'),
   gst: z.coerce.number().min(0, 'GST must be 0 or more.'),
   partyName: z.string().min(2, 'Party name must be at least 2 characters.'),
-  billDate: z.string().min(1, 'Bill date is required.'),
   pageNo: z.string().min(1, 'Page number is required.'),
 });
 
@@ -32,29 +30,12 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const formatDateForDisplay = (date: Date | string | undefined) => {
-    if (!date) return '';
-    // If it's a date object, format it. Otherwise, assume it's already a string like 'DD/MM/YYYY'
-    try {
-      const d = new Date(date);
-      // Check if date is valid
-      if (isNaN(d.getTime())) return typeof date === 'string' ? date : '';
-      const day = String(d.getDate()).padStart(2, '0');
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const year = d.getFullYear();
-      return `${day}/${month}/${year}`;
-    } catch (e) {
-      return typeof date === 'string' ? date : '';
-    }
-  }
-
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       rate: product.currentRate?.rate ?? 0,
       gst: product.currentRate?.gst ?? 0,
       partyName: product.currentRate?.partyName ?? '',
-      billDate: formatDateForDisplay(product.currentRate?.billDate) ?? '',
       pageNo: product.currentRate?.pageNo ?? '',
     },
   });
@@ -101,7 +82,6 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
                     <span>GST: {product.currentRate.gst.toFixed(2)}%</span>
                     <span>Final: {product.currentRate.finalRate.toFixed(2)}</span>
                     <span>Party: {product.currentRate.partyName}</span>
-                    {product.currentRate.billDate && <span>Bill Date: {formatDateForDisplay(product.currentRate.billDate)}</span>}
                     {product.currentRate.pageNo && <span>Page No: {product.currentRate.pageNo}</span>}
                 </div>
             </CardContent>
@@ -151,34 +131,19 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
               </FormItem>
             )}
           />
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-                control={form.control}
-                name="billDate"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Bill Date</FormLabel>
-                    <FormControl>
-                        <Input type="text" placeholder="e.g., 25/12/2024" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-            />
-            <FormField
-                control={form.control}
-                name="pageNo"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Page No.</FormLabel>
-                    <FormControl>
-                        <Input placeholder="e.g., F-12, 23" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-            />
-          </div>
+           <FormField
+              control={form.control}
+              name="pageNo"
+              render={({ field }) => (
+                  <FormItem>
+                  <FormLabel>Page No.</FormLabel>
+                  <FormControl>
+                      <Input placeholder="e.g., F-12, 23" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                  </FormItem>
+              )}
+          />
 
 
           <Button type="submit" disabled={isSubmitting} className="w-full mt-4">

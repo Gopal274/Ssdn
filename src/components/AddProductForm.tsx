@@ -17,7 +17,6 @@ const formSchema = z.object({
   gst: z.coerce.number().min(0, 'GST must be 0 or more.'),
   unit: z.string().min(1, 'Unit is required.'),
   partyName: z.string().min(2, 'Party name must be at least 2 characters.'),
-  billDate: z.string().min(1, 'Bill date is required.'),
   pageNo: z.string().min(1, 'Page number is required.'),
 });
 
@@ -38,7 +37,6 @@ export function AddProductForm({ onProductAdded }: AddProductFormProps) {
       gst: 0,
       unit: '',
       partyName: '',
-      billDate: '',
       pageNo: '',
     },
   });
@@ -147,34 +145,19 @@ export function AddProductForm({ onProductAdded }: AddProductFormProps) {
             )}
           />
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="billDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Bill Date</FormLabel>
-                <FormControl>
-                  <Input type="text" placeholder="e.g. 12/12/2024" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="pageNo"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Page No.</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g., F-12, 23" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="pageNo"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Page No.</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., F-12, 23" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         
         <Button type="submit" disabled={isSubmitting} className="w-full mt-4">
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

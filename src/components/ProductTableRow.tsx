@@ -72,26 +72,13 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
   
   const hasHistory = product.rateHistory && product.rateHistory.length > 0;
 
-  const formatDate = (dateString?: string | Date) => {
-    if (!dateString) return '-';
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) {
-        return dateString.toString();
-      }
-      return date.toLocaleDateString();
-    } catch (e) {
-      return dateString.toString();
-    }
-  }
-
   if (!product.currentRate) {
      // This case should ideally not happen with good data, but it's a safeguard.
      return (
         <TableRow>
             <TableCell>{index + 1}</TableCell>
             <TableCell>{product.productName}</TableCell>
-            <TableCell colSpan={8} className="text-muted-foreground">Product data is incomplete.</TableCell>
+            <TableCell colSpan={7} className="text-muted-foreground">Product data is incomplete.</TableCell>
              <TableCell className="text-center">
                 <div className="flex items-center justify-center space-x-1">
                   <Dialog open={isUpdateModalOpen} onOpenChange={setUpdateModalOpen}>
@@ -160,7 +147,6 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
           {product.currentRate.finalRate.toFixed(2)}
         </TableCell>
         <TableCell>{product.currentRate.partyName}</TableCell>
-        <TableCell>{formatDate(product.currentRate.billDate)}</TableCell>
         <TableCell>{product.currentRate.pageNo || '-'}</TableCell>
         <TableCell className="text-center">
           <div className="flex items-center justify-center space-x-1">
@@ -210,7 +196,6 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
           <TableCell className="text-right">{history.gst.toFixed(2)}%</TableCell>
           <TableCell className="text-right font-medium">{history.finalRate.toFixed(2)}</TableCell>
           <TableCell>{history.partyName}</TableCell>
-          <TableCell>{formatDate(history.billDate)}</TableCell>
           <TableCell>{history.pageNo || '-'}</TableCell>
           <TableCell></TableCell>
         </TableRow>

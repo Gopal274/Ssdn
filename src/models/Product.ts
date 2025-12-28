@@ -7,7 +7,6 @@ export interface IRate {
   finalRate: number;
   partyName: string;
   updatedAt: Date;
-  billDate: Date;
   pageNo: string;
 }
 
@@ -24,7 +23,6 @@ const RateSchema: Schema<IRate> = new Schema({
   finalRate: { type: Number, required: true },
   partyName: { type: String, required: true, trim: true },
   updatedAt: { type: Date, required: true },
-  billDate: { type: Date, required: true },
   pageNo: { type: String, required: true, trim: true },
 }, { _id: false });
 

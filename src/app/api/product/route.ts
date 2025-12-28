@@ -8,9 +8,9 @@ export async function POST(request: Request) {
   await dbConnect();
     try {
         const body = await request.json();
-        const { productName, unit, rate, gst, partyName, billDate, pageNo } = body;
+        const { productName, unit, rate, gst, partyName, pageNo } = body;
 
-        if (!productName || !unit || rate === undefined || gst === undefined || !partyName || !billDate || !pageNo) {
+        if (!productName || !unit || rate === undefined || gst === undefined || !partyName || !pageNo) {
             return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
         }
 
@@ -25,7 +25,6 @@ export async function POST(request: Request) {
                 finalRate,
                 partyName,
                 updatedAt: new Date(),
-                billDate: new Date(billDate),
                 pageNo: pageNo,
               },
               rateHistory: [],
