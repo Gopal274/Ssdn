@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { IProduct } from '@/models/Product';
-import { PlusCircle, Loader2, ArrowUpDown, Filter, Search, Printer, SortAsc, SortDesc } from 'lucide-react';
+import { PlusCircle, Loader2, ArrowUpDown, Filter, Search, Printer, SortAsc, SortDesc, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import {
   Table,
@@ -23,7 +23,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -50,6 +57,11 @@ export default function ProductTable() {
   const [partySortDir, setPartySortDir] = useState<SortDirection>('asc');
   const [gstFilter, setGstFilter] = useState<number[]>([]);
   const [unitFilter, setUnitFilter] = useState<string[]>([]);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
 
   const uniquePartyNames = useMemo(() => {
     const names = products
@@ -165,6 +177,20 @@ export default function ProductTable() {
     return sortableProducts;
   }, [products, sortConfig, productNameSearch, partyNameSearch, partyNameFilter, gstFilter, unitFilter]);
 
+  // Reset to first page whenever filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [productNameSearch, partyNameSearch, partyNameFilter, gstFilter, unitFilter]);
+
+
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return filteredAndSortedProducts.slice(startIndex, endIndex);
+  }, [filteredAndSortedProducts, currentPage, rowsPerPage]);
+
+  const totalPages = Math.ceil(filteredAndSortedProducts.length / rowsPerPage);
+
 
   const handleProductAdded = () => {
     setAddModalOpen(false);
@@ -259,7 +285,7 @@ export default function ProductTable() {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className='card-content-print'>
         <div className="rounded-md border overflow-x-auto">
           <style jsx>{`
             @media print {
@@ -497,11 +523,11 @@ export default function ProductTable() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredAndSortedProducts.map((product, index) => (
+                  paginatedProducts.map((product, index) => (
                     <ProductTableRow
                       key={product._id}
                       product={product}
-                      index={index}
+                      index={(currentPage - 1) * rowsPerPage + index}
                       onRateUpdated={handleRateUpdated}
                       onProductDeleted={handleProductDeleted}
                     />
@@ -509,10 +535,66 @@ export default function ProductTable() {
                 )}
               </TableBody>
             </Table>
+             {filteredAndSortedProducts.length === 0 && !loading && (
+                <div className="text-center p-4 text-muted-foreground">
+                    No products match the current filters.
+                </div>
+            )}
         </div>
       </CardContent>
+      <CardFooter className='no-print flex items-center justify-between pt-6'>
+         <div className="text-sm text-muted-foreground">
+            {`Showing ${Math.min((currentPage - 1) * rowsPerPage + 1, filteredAndSortedProducts.length)}
+             to ${Math.min(currentPage * rowsPerPage, filteredAndSortedProducts.length)}
+             of ${filteredAndSortedProducts.length} products`}
+        </div>
+        <div className='flex items-center space-x-6'>
+            <div className="flex items-center space-x-2">
+                <p className="text-sm font-medium">Rows per page</p>
+                <Select
+                    value={`${rowsPerPage}`}
+                    onValueChange={(value) => {
+                        setRowsPerPage(Number(value))
+                        setCurrentPage(1)
+                    }}
+                >
+                    <SelectTrigger className="h-8 w-[70px]">
+                        <SelectValue placeholder={rowsPerPage} />
+                    </SelectTrigger>
+                    <SelectContent side="top">
+                        {[10, 20, 30, 40, 50].map((pageSize) => (
+                        <SelectItem key={pageSize} value={`${pageSize}`}>
+                            {pageSize}
+                        </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+            <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+                Page {currentPage} of {totalPages}
+            </div>
+            <div className='flex items-center space-x-2'>
+                <Button
+                    variant="outline"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                >
+                    <span className="sr-only">Go to previous page</span>
+                    <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                    variant="outline"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                >
+                    <span className="sr-only">Go to next page</span>
+                    <ChevronRight className="h-4 w-4" />
+                </Button>
+            </div>
+        </div>
+      </CardFooter>
     </Card>
   );
 }
-
-    

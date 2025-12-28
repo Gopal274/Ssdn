@@ -251,7 +251,7 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
       </TableRow>
       {isHistoryOpen && hasHistory && product.rateHistory.map((history, i) => (
         <TableRow key={`${product._id}-history-${i}`} className="text-muted-foreground text-xs bg-muted/30 hover:bg-muted/50">
-          <TableCell></TableCell>
+          <TableCell>{index + 1}</TableCell>
           <TableCell>
             <span className="pl-4">↳ {new Date(history.updatedAt).toLocaleDateString()}</span>
           </TableCell>
