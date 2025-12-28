@@ -78,6 +78,7 @@ export default function ProductTable() {
   const filteredPartyNamesForDropdown = useMemo(() => {
     // This list is just for the dropdown checkboxes, it doesn't filter the main table directly with search
     return uniquePartyNames
+      .filter(name => name.toLowerCase().includes(partyNameSearch.toLowerCase()))
       .sort((a, b) => {
         if (partySortDir === 'asc') {
           return a.localeCompare(b);
@@ -85,7 +86,7 @@ export default function ProductTable() {
           return b.localeCompare(a);
         }
       });
-  }, [uniquePartyNames, partySortDir]);
+  }, [uniquePartyNames, partyNameSearch, partySortDir]);
 
 
   const fetchProducts = useCallback(async () => {
@@ -187,13 +188,13 @@ export default function ProductTable() {
   const isShowingAll = rowsPerPage === totalProducts;
 
   const paginatedProducts = useMemo(() => {
-    if (isShowingAll) return filteredAndSortedProducts;
+    if (isShowingAll || !rowsPerPage) return filteredAndSortedProducts;
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
     return filteredAndSortedProducts.slice(startIndex, endIndex);
   }, [filteredAndSortedProducts, currentPage, rowsPerPage, isShowingAll]);
 
-  const totalPages = isShowingAll ? 1 : Math.ceil(totalProducts / rowsPerPage);
+  const totalPages = isShowingAll || !rowsPerPage ? 1 : Math.ceil(totalProducts / rowsPerPage);
 
 
   const handleProductAdded = () => {
@@ -243,7 +244,7 @@ export default function ProductTable() {
 
     if (allSelected) {
       // Deselect all
-      setPartyNameFilter([]);
+      setPartyNameFilter(partyNameFilter.filter(name => !allVisiblePartyNames.includes(name)));
     } else {
       // Select all visible
       setPartyNameFilter([...new Set([...partyNameFilter, ...allVisiblePartyNames])]);
@@ -291,13 +292,6 @@ export default function ProductTable() {
       </CardHeader>
       <CardContent className='card-content-print'>
         <div className="rounded-md border overflow-x-auto">
-          <style jsx>{`
-            @media print {
-                .card-content-print {
-                    padding: 0;
-                }
-            }
-          `}</style>
             <Table>
               {!loading && !error && products.length === 0 && (
                 <TableCaption>
@@ -471,9 +465,9 @@ export default function ProductTable() {
                               <DropdownMenuCheckboxItem
                                 onSelect={(e) => e.preventDefault()}
                                 onClick={handleSelectAllParties}
-                                checked={filteredPartyNamesForDropdown.every(name => partyNameFilter.includes(name))}
+                                checked={partyNameFilter.length > 0 && filteredPartyNamesForDropdown.every(name => partyNameFilter.includes(name))}
                               >
-                                {filteredPartyNamesForDropdown.every(name => partyNameFilter.includes(name)) ? 'Deselect All' : 'Select All'}
+                                {partyNameFilter.length > 0 && filteredPartyNamesForDropdown.every(name => partyNameFilter.includes(name)) ? 'Deselect All' : 'Select All'}
                               </DropdownMenuCheckboxItem>
                             )}
                            {filteredPartyNamesForDropdown.map(partyName => (
@@ -548,22 +542,26 @@ export default function ProductTable() {
       </CardContent>
       <CardFooter className='no-print flex items-center justify-between pt-6'>
          <div className="text-sm text-muted-foreground">
-            {`Showing ${isShowingAll ? 'all' : Math.min((currentPage - 1) * rowsPerPage + 1, totalProducts)}
-             to ${isShowingAll ? totalProducts : Math.min(currentPage * rowsPerPage, totalProducts)}
+            {`Showing ${isShowingAll || !rowsPerPage ? 'all' : Math.min((currentPage - 1) * rowsPerPage + 1, totalProducts)}
+             to ${isShowingAll || !rowsPerPage ? totalProducts : Math.min(currentPage * rowsPerPage, totalProducts)}
              of ${totalProducts} products`}
         </div>
         <div className='flex items-center space-x-6'>
             <div className="flex items-center space-x-2">
                 <p className="text-sm font-medium">Rows per page</p>
                 <Select
-                    value={isShowingAll ? 'all' : `${rowsPerPage}`}
+                    value={isShowingAll || !rowsPerPage ? 'all' : `${rowsPerPage}`}
                     onValueChange={(value) => {
-                        setRowsPerPage(value === 'all' ? totalProducts : Number(value))
+                        if (value === 'all') {
+                            setRowsPerPage(0); // Using 0 or totalProducts to signify 'all'
+                        } else {
+                            setRowsPerPage(Number(value))
+                        }
                         setCurrentPage(1)
                     }}
                 >
                     <SelectTrigger className="h-8 w-[70px]">
-                        <SelectValue placeholder={rowsPerPage} />
+                        <SelectValue placeholder={rowsPerPage || 'All'} />
                     </SelectTrigger>
                     <SelectContent side="top">
                         {[10, 20, 30, 40, 50].map((pageSize) => (
@@ -583,7 +581,7 @@ export default function ProductTable() {
                     variant="outline"
                     className="h-8 w-8 p-0"
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={isShowingAll || currentPage === 1}
+                    disabled={isShowingAll || !rowsPerPage || currentPage === 1}
                 >
                     <span className="sr-only">Go to previous page</span>
                     <ChevronLeft className="h-4 w-4" />
@@ -592,7 +590,7 @@ export default function ProductTable() {
                     variant="outline"
                     className="h-8 w-8 p-0"
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={isShowingAll || currentPage === totalPages}
+                    disabled={isShowingAll || !rowsPerPage || currentPage === totalPages}
                 >
                     <span className="sr-only">Go to next page</span>
                     <ChevronRight className="h-4 w-4" />
