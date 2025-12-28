@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, Fragment } from 'react';
@@ -23,8 +24,9 @@ import {
 
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { PlusSquare, Trash2, ChevronRight } from 'lucide-react';
+import { PlusSquare, Trash2, ChevronRight, Pencil } from 'lucide-react';
 import { UpdateRateForm } from './UpdateRateForm';
+import { EditDetailsForm } from './EditDetailsForm';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import {
@@ -43,11 +45,13 @@ interface ProductTableRowProps {
 
 export function ProductTableRow({ product, index, onRateUpdated, onProductDeleted }: ProductTableRowProps) {
   const [isUpdateModalOpen, setUpdateModalOpen] = useState(false);
+  const [isEditDetailsModalOpen, setEditDetailsModalOpen] = useState(false);
   const [isHistoryOpen, setHistoryOpen] = useState(false);
   const { toast } = useToast();
 
-  const handleUpdateSuccess = () => {
+  const handleSuccess = () => {
     setUpdateModalOpen(false);
+    setEditDetailsModalOpen(false);
     onRateUpdated();
   };
 
@@ -125,7 +129,7 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
                       <DialogHeader>
                         <DialogTitle className='font-headline'>Update Rate for {product.productName}</DialogTitle>
                       </DialogHeader>
-                      <UpdateRateForm product={product} onRateUpdated={handleUpdateSuccess} />
+                      <UpdateRateForm product={product} onRateUpdated={handleSuccess} />
                     </DialogContent>
                   </Dialog>
                   <AlertDialog>
@@ -207,7 +211,20 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
                 <DialogHeader>
                   <DialogTitle className='font-headline'>Update Rate for {product.productName}</DialogTitle>
                 </DialogHeader>
-                <UpdateRateForm product={product} onRateUpdated={handleUpdateSuccess} />
+                <UpdateRateForm product={product} onRateUpdated={handleSuccess} />
+              </DialogContent>
+            </Dialog>
+            <Dialog open={isEditDetailsModalOpen} onOpenChange={setEditDetailsModalOpen}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" title="Edit Details" onClick={(e) => e.stopPropagation()}>
+                  <Pencil className="h-4 w-4 text-blue-600" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[480px]">
+                <DialogHeader>
+                  <DialogTitle className='font-headline'>Edit Details for {product.productName}</DialogTitle>
+                </DialogHeader>
+                <EditDetailsForm product={product} onDetailsUpdated={handleSuccess} />
               </DialogContent>
             </Dialog>
             <AlertDialog>

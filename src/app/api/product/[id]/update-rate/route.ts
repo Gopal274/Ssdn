@@ -13,7 +13,8 @@ export async function PUT(
   try {
     await dbConnect();
     const body = await request.json();
-    const { rate, gst, partyName, billDate, pageNo, category } = body;
+    // Simplified to not include optional fields on rate update
+    const { rate, gst, partyName } = body;
 
     if (rate === undefined || gst === undefined || !partyName) {
         return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
@@ -38,9 +39,7 @@ export async function PUT(
       finalRate,
       partyName,
       updatedAt: new Date(),
-      billDate: billDate || undefined,
-      pageNo: pageNo || undefined,
-      category: category || undefined,
+      // Optional fields are not set here anymore
     };
 
     await product.save();

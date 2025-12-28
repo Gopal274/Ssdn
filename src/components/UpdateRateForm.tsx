@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -11,16 +12,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from './ui/card';
-import { formatDateForInput } from '@/lib/utils';
-
 
 const formSchema = z.object({
   rate: z.coerce.number().positive('Rate must be a positive number.'),
   gst: z.coerce.number().min(0, 'GST must be 0 or more.'),
   partyName: z.string().min(2, 'Party name must be at least 2 characters.'),
-  billDate: z.string().optional(),
-  pageNo: z.string().optional(),
-  category: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -40,27 +36,17 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
       rate: product.currentRate?.rate ?? 0,
       gst: product.currentRate?.gst ?? 0,
       partyName: product.currentRate?.partyName ?? '',
-      billDate: formatDateForInput(product.currentRate?.billDate),
-      pageNo: product.currentRate?.pageNo ?? '',
-      category: product.currentRate?.category ?? '',
     },
   });
 
   const onSubmit: SubmitHandler<FormValues> = async (values) => {
     setIsSubmitting(true);
     
-    const submittedValues = {
-      ...values,
-      billDate: values.billDate || undefined,
-      pageNo: values.pageNo || undefined,
-      category: values.category || undefined,
-    }
-
     try {
       const response = await fetch(`/api/product/${product._id}/update-rate`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(submittedValues),
+        body: JSON.stringify(values),
       });
 
       const result = await response.json();
@@ -146,48 +132,6 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
               </FormItem>
             )}
           />
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="billDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bill Date (Optional)</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="pageNo"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Page No. (Optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., F-123" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <FormField
-            control={form.control}
-            name="category"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Category (Optional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g., Spices" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
           <Button type="submit" disabled={isSubmitting} className="w-full mt-4">
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Update Rate

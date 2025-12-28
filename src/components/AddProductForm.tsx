@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -17,9 +18,6 @@ const formSchema = z.object({
   gst: z.coerce.number().min(0, 'GST must be 0 or more.'),
   unit: z.string().min(1, 'Unit is required.'),
   partyName: z.string().min(2, 'Party name must be at least 2 characters.'),
-  billDate: z.string().optional(),
-  pageNo: z.string().optional(),
-  category: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -39,27 +37,17 @@ export function AddProductForm({ onProductAdded }: AddProductFormProps) {
       gst: 0,
       unit: '',
       partyName: '',
-      billDate: '',
-      pageNo: '',
-      category: '',
     },
   });
 
   const onSubmit: SubmitHandler<FormValues> = async (values) => {
     setIsSubmitting(true);
     
-    const submittedValues = {
-      ...values,
-      billDate: values.billDate || undefined,
-      pageNo: values.pageNo || undefined,
-      category: values.category || undefined,
-    }
-
     try {
       const response = await fetch('/api/product', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(submittedValues),
+        body: JSON.stringify(values),
       });
       const result = await response.json();
       
@@ -156,47 +144,6 @@ export function AddProductForm({ onProductAdded }: AddProductFormProps) {
             )}
           />
         </div>
-         <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="billDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Bill Date (Optional)</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="pageNo"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Page No. (Optional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g., F-123" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-         <FormField
-          control={form.control}
-          name="category"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Category (Optional)</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., Spices" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         
         <Button type="submit" disabled={isSubmitting} className="w-full mt-4">
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

@@ -8,7 +8,8 @@ export async function POST(request: Request) {
   await dbConnect();
     try {
         const body = await request.json();
-        const { productName, unit, rate, gst, partyName, billDate, pageNo, category } = body;
+        // Simplified to not include optional fields on creation
+        const { productName, unit, rate, gst, partyName } = body;
 
         if (!productName || !unit || rate === undefined || gst === undefined || !partyName) {
             return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
@@ -25,9 +26,7 @@ export async function POST(request: Request) {
                 finalRate,
                 partyName,
                 updatedAt: new Date(),
-                billDate: billDate || undefined,
-                pageNo: pageNo || undefined,
-                category: category || undefined,
+                // Optional fields are not set on creation anymore
               },
               rateHistory: [],
             };

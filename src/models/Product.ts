@@ -12,6 +12,13 @@ export interface IRate {
   updatedAt: Date;
 }
 
+// Add a specific interface for the update payload
+export interface ICurrentRateUpdate {
+    billDate?: Date;
+    pageNo?: string;
+    category?: string;
+}
+
 export interface IProduct extends Document {
   productName: string;
   unit: string;
