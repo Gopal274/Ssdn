@@ -4,23 +4,20 @@ import { useState } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, CalendarIcon } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import type { IProduct } from '@/models/Product';
-import { calculateFinalRate, cn } from '@/lib/utils';
+import { calculateFinalRate } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from './ui/card';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns';
 
 const formSchema = z.object({
   rate: z.coerce.number().positive('Rate must be a positive number.'),
   gst: z.coerce.number().min(0, 'GST must be 0 or more.'),
   partyName: z.string().min(2, 'Party name must be at least 2 characters.'),
-  billDate: z.date().optional(),
+  billDate: z.string().optional(),
   pageNo: z.string().optional(),
 });
 
@@ -34,13 +31,24 @@ interface UpdateRateFormProps {
 export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const formatDateForInput = (date?: Date | string) => {
+    if (!date) return '';
+    try {
+      return new Date(date).toLocaleDateString('en-CA'); // YYYY-MM-DD
+    } catch {
+      return '';
+    }
+  };
+
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       rate: product.currentRate?.rate ?? 0,
       gst: product.currentRate?.gst ?? 0,
       partyName: product.currentRate?.partyName ?? '',
-      billDate: product.currentRate?.billDate ? new Date(product.currentRate.billDate) : undefined,
+      billDate: product.currentRate?.billDate ? new Date(product.currentRate.billDate).toLocaleDateString('en-GB').replace(/\//g, '/') : '',
       pageNo: product.currentRate?.pageNo ?? '',
     },
   });
@@ -48,7 +56,7 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
   const onSubmit: SubmitHandler<FormValues> = async (values) => {
     setIsSubmitting(true);
     const finalRate = calculateFinalRate(values.rate, values.gst);
-    const payload = { ...values, billDate: values.billDate ? values.billDate.toISOString() : undefined, finalRate };
+    const payload = { ...values, finalRate };
 
     try {
       const response = await fetch(`/api/product/${product._id}/update-rate`, {
@@ -140,62 +148,33 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
             )}
           />
           <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="billDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Bill Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
+            <FormField
+                control={form.control}
+                name="billDate"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Bill Date</FormLabel>
                     <FormControl>
-                      <Button
-                        type="button"
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "dd/MM/yy")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
+                        <Input placeholder="dd/mm/yy" {...field} />
                     </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-              control={form.control}
-              name="pageNo"
-              render={({ field }) => (
-                  <FormItem>
-                  <FormLabel>Page No.</FormLabel>
-                  <FormControl>
-                      <Input placeholder="e.g., F-12, 23" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                  </FormItem>
-              )}
-          />
-        </div>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
+            <FormField
+                control={form.control}
+                name="pageNo"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Page No.</FormLabel>
+                    <FormControl>
+                        <Input placeholder="e.g., F-12, 23" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
+          </div>
 
 
           <Button type="submit" disabled={isSubmitting} className="w-full mt-4">

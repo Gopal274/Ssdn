@@ -4,16 +4,13 @@ import { useState } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, CalendarIcon } from 'lucide-react';
-import { format } from "date-fns"
+import { Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { calculateFinalRate, cn } from '@/lib/utils';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
+import { calculateFinalRate } from '@/lib/utils';
 
 const formSchema = z.object({
   productName: z.string().min(2, 'Product name must be at least 2 characters.'),
@@ -21,7 +18,7 @@ const formSchema = z.object({
   gst: z.coerce.number().min(0, 'GST must be 0 or more.'),
   unit: z.string().min(1, 'Unit is required.'),
   partyName: z.string().min(2, 'Party name must be at least 2 characters.'),
-  billDate: z.date().optional(),
+  billDate: z.string().optional(),
   pageNo: z.string().optional(),
 });
 
@@ -42,7 +39,7 @@ export function AddProductForm({ onProductAdded }: AddProductFormProps) {
       gst: 0,
       unit: '',
       partyName: '',
-      billDate: undefined,
+      billDate: '',
       pageNo: '',
     },
   });
@@ -51,7 +48,8 @@ export function AddProductForm({ onProductAdded }: AddProductFormProps) {
     setIsSubmitting(true);
     const finalRate = calculateFinalRate(values.rate, values.gst);
     
-    const payload = { ...values, billDate: values.billDate ? values.billDate.toISOString() : undefined, finalRate };
+    // Pass the date string as is, let the backend handle it.
+    const payload = { ...values, finalRate };
 
     try {
       const response = await fetch('/api/product', {
@@ -156,46 +154,17 @@ export function AddProductForm({ onProductAdded }: AddProductFormProps) {
         </div>
         <div className="grid grid-cols-2 gap-4">
           <FormField
-            control={form.control}
-            name="billDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Bill Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        type="button"
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "dd/MM/yy")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
+              control={form.control}
+              name="billDate"
+              render={({ field }) => (
+                  <FormItem>
+                  <FormLabel>Bill Date</FormLabel>
+                  <FormControl>
+                      <Input placeholder="dd/mm/yy" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                  </FormItem>
+              )}
           />
           <FormField
               control={form.control}
