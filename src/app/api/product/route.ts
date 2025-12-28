@@ -4,15 +4,14 @@ import Product, { IProduct } from '@/models/Product';
 import { calculateFinalRate } from '@/lib/utils';
 
 export async function POST(request: Request) {
+  await dbConnect();
   try {
     const body = await request.json();
-    const { productName, unit, rate, gst, partyName } = body;
+    const { productName, unit, rate, gst, partyName, billDate, pageNo } = body;
 
     if (!productName || !unit || rate === undefined || gst === undefined || !partyName) {
         return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
     }
-
-    await dbConnect();
 
     const finalRate = calculateFinalRate(rate, gst);
 
@@ -25,6 +24,8 @@ export async function POST(request: Request) {
         finalRate,
         partyName,
         updatedAt: new Date(),
+        billDate: billDate ? new Date(billDate) : undefined,
+        pageNo,
       },
       rateHistory: [],
     };

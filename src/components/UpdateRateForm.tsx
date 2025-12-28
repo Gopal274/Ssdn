@@ -4,19 +4,24 @@ import { useState } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CalendarIcon } from 'lucide-react';
 import type { IProduct } from '@/models/Product';
-import { calculateFinalRate } from '@/lib/utils';
+import { calculateFinalRate, cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from './ui/card';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Calendar } from './ui/calendar';
+import { format } from 'date-fns';
 
 const formSchema = z.object({
   rate: z.coerce.number().positive('Rate must be a positive number.'),
   gst: z.coerce.number().min(0, 'GST must be 0 or more.'),
   partyName: z.string().min(2, 'Party name must be at least 2 characters.'),
+  billDate: z.date().optional(),
+  pageNo: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -35,6 +40,8 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
       rate: product.currentRate?.rate ?? 0,
       gst: product.currentRate?.gst ?? 0,
       partyName: product.currentRate?.partyName ?? '',
+      billDate: product.currentRate?.billDate ? new Date(product.currentRate.billDate) : undefined,
+      pageNo: product.currentRate?.pageNo ?? '',
     },
   });
 
@@ -82,6 +89,8 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
                     <span>GST: {product.currentRate.gst.toFixed(2)}%</span>
                     <span>Final: {product.currentRate.finalRate.toFixed(2)}</span>
                     <span>Party: {product.currentRate.partyName}</span>
+                    {product.currentRate.billDate && <span>Bill Date: {new Date(product.currentRate.billDate).toLocaleDateString()}</span>}
+                    {product.currentRate.pageNo && <span>Page No: {product.currentRate.pageNo}</span>}
                 </div>
             </CardContent>
         </Card>
@@ -130,6 +139,63 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
               </FormItem>
             )}
           />
+          <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="billDate"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Bill Date</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      disabled={(date) =>
+                        date > new Date() || date < new Date("1900-01-01")
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+              control={form.control}
+              name="pageNo"
+              render={({ field }) => (
+                  <FormItem>
+                  <FormLabel>Page No.</FormLabel>
+                  <FormControl>
+                      <Input placeholder="e.g., F-12, 23" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                  </FormItem>
+              )}
+          />
+        </div>
+
 
           <Button type="submit" disabled={isSubmitting} className="w-full mt-4">
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

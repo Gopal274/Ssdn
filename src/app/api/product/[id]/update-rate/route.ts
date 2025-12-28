@@ -10,14 +10,14 @@ export async function PUT(
   const { id } = params;
   
   try {
+    await dbConnect();
     const body = await request.json();
-    const { rate, gst, partyName } = body;
+    const { rate, gst, partyName, billDate, pageNo } = body;
 
     if (rate === undefined || gst === undefined || !partyName) {
         return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
     }
     
-    await dbConnect();
     const product = await Product.findById(id);
 
     if (!product) {
@@ -37,6 +37,8 @@ export async function PUT(
       finalRate,
       partyName,
       updatedAt: new Date(),
+      billDate: billDate ? new Date(billDate) : undefined,
+      pageNo,
     };
 
     await product.save();
