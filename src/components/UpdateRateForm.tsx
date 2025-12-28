@@ -38,7 +38,7 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
       rate: product.currentRate?.rate ?? 0,
       gst: product.currentRate?.gst ?? 0,
       partyName: product.currentRate?.partyName ?? '',
-      billDate: product.currentRate?.billDate ? new Date(product.currentRate.billDate).toLocaleDateString('fr-CA') : '', // YYYY-MM-DD
+      billDate: product.currentRate?.billDate instanceof Date ? product.currentRate.billDate.toLocaleDateString() : product.currentRate?.billDate ?? '',
       pageNo: product.currentRate?.pageNo ?? '',
     },
   });
@@ -46,7 +46,6 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
   const onSubmit: SubmitHandler<FormValues> = async (values) => {
     setIsSubmitting(true);
     
-    // Ensure empty strings are not sent, but allow valid date strings
     const payload = { 
         ...values,
         billDate: values.billDate || undefined,
@@ -92,7 +91,7 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
                     <span>GST: {product.currentRate.gst.toFixed(2)}%</span>
                     <span>Final: {product.currentRate.finalRate.toFixed(2)}</span>
                     <span>Party: {product.currentRate.partyName}</span>
-                    {product.currentRate.billDate && <span>Bill Date: {new Date(product.currentRate.billDate).toLocaleDateString()}</span>}
+                    {product.currentRate.billDate && <span>Bill Date: {product.currentRate.billDate instanceof Date ? product.currentRate.billDate.toLocaleDateString() : product.currentRate.billDate}</span>}
                     {product.currentRate.pageNo && <span>Page No: {product.currentRate.pageNo}</span>}
                 </div>
             </CardContent>
@@ -150,7 +149,7 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
                     <FormItem>
                     <FormLabel>Bill Date</FormLabel>
                     <FormControl>
-                        <Input type="date" placeholder="YYYY-MM-DD" {...field} />
+                        <Input type="text" placeholder="e.g., 25/12/2024" {...field} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>

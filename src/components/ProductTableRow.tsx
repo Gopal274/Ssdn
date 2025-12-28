@@ -73,12 +73,11 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
 
   const formatDate = (dateString?: Date | string) => {
     if (!dateString) return '-';
-    // The date from MongoDB can be a string, so we need to ensure it's a Date object.
-    // The input from the form will be YYYY-MM-DD, which the Date constructor handles correctly.
-    const date = new Date(dateString);
-    // Add a time zone offset to prevent the date from being off by one day.
-    const userTimezoneOffset = date.getTimezoneOffset() * 60000;
-    return new Date(date.getTime() + userTimezoneOffset).toLocaleDateString();
+    // If it's a date object from history, format it. Otherwise, display the string.
+    if (dateString instanceof Date) {
+      return dateString.toLocaleDateString();
+    }
+    return dateString;
   }
 
 
