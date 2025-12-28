@@ -37,6 +37,19 @@ export function ProductTableRow({ product, index, onRateUpdated }: ProductTableR
 
   const hasHistory = product.rateHistory && product.rateHistory.length > 0;
 
+  if (!product.currentRate) {
+    // This can happen if a product is created without a rate.
+    // Render a placeholder or return null.
+    return (
+        <TableRow>
+            <TableCell></TableCell>
+            <TableCell>{index + 1}</TableCell>
+            <TableCell>{product.productName}</TableCell>
+            <TableCell colSpan={6} className="text-muted-foreground">Product data is incomplete.</TableCell>
+        </TableRow>
+    );
+  }
+
   return (
     <Collapsible asChild key={product._id} open={isHistoryOpen} onOpenChange={setHistoryOpen}>
       <>

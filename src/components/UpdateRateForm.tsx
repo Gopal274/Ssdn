@@ -32,9 +32,9 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      rate: product.currentRate.rate,
-      gst: product.currentRate.gst,
-      partyName: product.currentRate.partyName,
+      rate: product.currentRate?.rate ?? 0,
+      gst: product.currentRate?.gst ?? 0,
+      partyName: product.currentRate?.partyName ?? '',
     },
   });
 
@@ -73,17 +73,19 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
 
   return (
     <>
-      <Card className="mb-4 bg-muted/50 border-dashed">
-        <CardContent className="p-3 text-sm">
-            <p className='font-semibold mb-2'>Current Rate Details:</p>
-            <div className='grid grid-cols-2 gap-1 text-muted-foreground'>
-                <span>Rate: {product.currentRate.rate.toFixed(2)}</span>
-                <span>GST: {product.currentRate.gst.toFixed(2)}%</span>
-                <span>Final: {product.currentRate.finalRate.toFixed(2)}</span>
-                <span>Party: {product.currentRate.partyName}</span>
-            </div>
-        </CardContent>
-      </Card>
+      {product.currentRate && (
+        <Card className="mb-4 bg-muted/50 border-dashed">
+            <CardContent className="p-3 text-sm">
+                <p className='font-semibold mb-2'>Current Rate Details:</p>
+                <div className='grid grid-cols-2 gap-1 text-muted-foreground'>
+                    <span>Rate: {product.currentRate.rate.toFixed(2)}</span>
+                    <span>GST: {product.currentRate.gst.toFixed(2)}%</span>
+                    <span>Final: {product.currentRate.finalRate.toFixed(2)}</span>
+                    <span>Party: {product.currentRate.partyName}</span>
+                </div>
+            </CardContent>
+        </Card>
+      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
