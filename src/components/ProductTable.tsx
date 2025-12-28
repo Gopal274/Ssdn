@@ -183,13 +183,17 @@ export default function ProductTable() {
   }, [productNameSearch, partyNameSearch, partyNameFilter, gstFilter, unitFilter]);
 
 
+  const totalProducts = filteredAndSortedProducts.length;
+  const isShowingAll = rowsPerPage === totalProducts;
+
   const paginatedProducts = useMemo(() => {
+    if (isShowingAll) return filteredAndSortedProducts;
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
     return filteredAndSortedProducts.slice(startIndex, endIndex);
-  }, [filteredAndSortedProducts, currentPage, rowsPerPage]);
+  }, [filteredAndSortedProducts, currentPage, rowsPerPage, isShowingAll]);
 
-  const totalPages = Math.ceil(filteredAndSortedProducts.length / rowsPerPage);
+  const totalPages = isShowingAll ? 1 : Math.ceil(totalProducts / rowsPerPage);
 
 
   const handleProductAdded = () => {
@@ -544,17 +548,17 @@ export default function ProductTable() {
       </CardContent>
       <CardFooter className='no-print flex items-center justify-between pt-6'>
          <div className="text-sm text-muted-foreground">
-            {`Showing ${Math.min((currentPage - 1) * rowsPerPage + 1, filteredAndSortedProducts.length)}
-             to ${Math.min(currentPage * rowsPerPage, filteredAndSortedProducts.length)}
-             of ${filteredAndSortedProducts.length} products`}
+            {`Showing ${isShowingAll ? 'all' : Math.min((currentPage - 1) * rowsPerPage + 1, totalProducts)}
+             to ${isShowingAll ? totalProducts : Math.min(currentPage * rowsPerPage, totalProducts)}
+             of ${totalProducts} products`}
         </div>
         <div className='flex items-center space-x-6'>
             <div className="flex items-center space-x-2">
                 <p className="text-sm font-medium">Rows per page</p>
                 <Select
-                    value={`${rowsPerPage}`}
+                    value={isShowingAll ? 'all' : `${rowsPerPage}`}
                     onValueChange={(value) => {
-                        setRowsPerPage(Number(value))
+                        setRowsPerPage(value === 'all' ? totalProducts : Number(value))
                         setCurrentPage(1)
                     }}
                 >
@@ -567,6 +571,7 @@ export default function ProductTable() {
                             {pageSize}
                         </SelectItem>
                         ))}
+                         <SelectItem value="all">All</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -578,7 +583,7 @@ export default function ProductTable() {
                     variant="outline"
                     className="h-8 w-8 p-0"
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
+                    disabled={isShowingAll || currentPage === 1}
                 >
                     <span className="sr-only">Go to previous page</span>
                     <ChevronLeft className="h-4 w-4" />
@@ -587,7 +592,7 @@ export default function ProductTable() {
                     variant="outline"
                     className="h-8 w-8 p-0"
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
+                    disabled={isShowingAll || currentPage === totalPages}
                 >
                     <span className="sr-only">Go to next page</span>
                     <ChevronRight className="h-4 w-4" />
@@ -598,3 +603,5 @@ export default function ProductTable() {
     </Card>
   );
 }
+
+    
