@@ -1,22 +1,19 @@
 
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 
+export interface IExtraDetails {
+  billDate?: Date;
+  pageNo?: string;
+  category?: string;
+}
+
 export interface IRate {
   rate: number;
   gst: number;
   finalRate: number;
   partyName: string;
-  billDate?: Date;
-  pageNo?: string;
-  category?: string;
   updatedAt: Date;
-}
-
-// Add a specific interface for the update payload
-export interface ICurrentRateUpdate {
-    billDate?: Date;
-    pageNo?: string;
-    category?: string;
+  extraDetails?: IExtraDetails;
 }
 
 export interface IProduct extends Document {
@@ -26,15 +23,19 @@ export interface IProduct extends Document {
   rateHistory: IRate[];
 }
 
+const ExtraDetailsSchema: Schema<IExtraDetails> = new Schema({
+  billDate: { type: Date },
+  pageNo: { type: String, trim: true },
+  category: { type: String, trim: true },
+}, { _id: false });
+
 const RateSchema: Schema<IRate> = new Schema({
   rate: { type: Number, required: true },
   gst: { type: Number, required: true },
   finalRate: { type: Number, required: true },
   partyName: { type: String, required: true, trim: true },
-  billDate: { type: Date },
-  pageNo: { type: String, trim: true },
-  category: { type: String, trim: true },
   updatedAt: { type: Date, required: true },
+  extraDetails: { type: ExtraDetailsSchema },
 }, { _id: false });
 
 const ProductSchema: Schema<IProduct> = new Schema({

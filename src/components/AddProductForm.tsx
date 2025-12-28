@@ -18,6 +18,9 @@ const formSchema = z.object({
   gst: z.coerce.number().min(0, 'GST must be 0 or more.'),
   unit: z.string().min(1, 'Unit is required.'),
   partyName: z.string().min(2, 'Party name must be at least 2 characters.'),
+  billDate: z.string().optional(),
+  pageNo: z.string().optional(),
+  category: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -39,17 +42,29 @@ export function AddProductForm({ onProductAdded, uniqueUnits, uniquePartyNames }
       gst: 0,
       unit: '',
       partyName: '',
+      billDate: '',
+      pageNo: '',
+      category: '',
     },
   });
 
   const onSubmit: SubmitHandler<FormValues> = async (values) => {
     setIsSubmitting(true);
     
+    const submittedValues = {
+      ...values,
+      extraDetails: {
+        billDate: values.billDate || undefined,
+        pageNo: values.pageNo || undefined,
+        category: values.category || undefined,
+      },
+    };
+    
     try {
       const response = await fetch('/api/product', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
+        body: JSON.stringify(submittedValues),
       });
       const result = await response.json();
       
@@ -155,6 +170,48 @@ export function AddProductForm({ onProductAdded, uniqueUnits, uniquePartyNames }
               </FormItem>
             )}
           />
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField
+              control={form.control}
+              name="billDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bill Date (Opt.)</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="pageNo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Page No. (Opt.)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., F-123" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category (Opt.)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., Spices" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
         </div>
         
         <Button type="submit" disabled={isSubmitting} className="w-full mt-4">

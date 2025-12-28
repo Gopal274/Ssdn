@@ -24,9 +24,8 @@ import {
 
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { PlusSquare, Trash2, ChevronRight, Pencil, RotateCcw } from 'lucide-react';
+import { PlusSquare, Trash2, ChevronRight, RotateCcw } from 'lucide-react';
 import { UpdateRateForm } from './UpdateRateForm';
-import { EditDetailsForm } from './EditDetailsForm';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import {
@@ -45,13 +44,11 @@ interface ProductTableRowProps {
 
 export function ProductTableRow({ product, index, onRateUpdated, onProductDeleted }: ProductTableRowProps) {
   const [isUpdateModalOpen, setUpdateModalOpen] = useState(false);
-  const [isEditDetailsModalOpen, setEditDetailsModalOpen] = useState(false);
   const [isHistoryOpen, setHistoryOpen] = useState(false);
   const { toast } = useToast();
 
   const handleSuccess = () => {
     setUpdateModalOpen(false);
-    setEditDetailsModalOpen(false);
     onRateUpdated();
   };
 
@@ -220,9 +217,9 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
             </Tooltip>
           </TooltipProvider>
         </TableCell>
-        <TableCell>{product.currentRate.billDate ? new Date(product.currentRate.billDate).toLocaleDateString() : '-'}</TableCell>
-        <TableCell>{product.currentRate.pageNo || '-'}</TableCell>
-        <TableCell>{product.currentRate.category || '-'}</TableCell>
+        <TableCell>{product.currentRate.extraDetails?.billDate ? new Date(product.currentRate.extraDetails.billDate).toLocaleDateString() : '-'}</TableCell>
+        <TableCell>{product.currentRate.extraDetails?.pageNo || '-'}</TableCell>
+        <TableCell>{product.currentRate.extraDetails?.category || '-'}</TableCell>
         <TableCell className="text-center no-print">
           <div className="flex items-center justify-center space-x-1">
             <Dialog open={isUpdateModalOpen} onOpenChange={setUpdateModalOpen}>
@@ -236,19 +233,6 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
                   <DialogTitle className='font-headline'>Update Rate for {product.productName}</DialogTitle>
                 </DialogHeader>
                 <UpdateRateForm product={product} onRateUpdated={handleSuccess} />
-              </DialogContent>
-            </Dialog>
-            <Dialog open={isEditDetailsModalOpen} onOpenChange={setEditDetailsModalOpen}>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" title="Edit Details" onClick={(e) => e.stopPropagation()}>
-                  <Pencil className="h-4 w-4 text-blue-600" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[480px]">
-                <DialogHeader>
-                  <DialogTitle className='font-headline'>Edit Details for {product.productName}</DialogTitle>
-                </DialogHeader>
-                <EditDetailsForm product={product} onDetailsUpdated={handleSuccess} />
               </DialogContent>
             </Dialog>
             <AlertDialog>
@@ -303,9 +287,9 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
           <TableCell className="text-right">{history.gst.toFixed(2)}%</TableCell>
           <TableCell className="text-right font-medium">{history.finalRate.toFixed(2)}</TableCell>
           <TableCell>{history.partyName}</TableCell>
-          <TableCell>{history.billDate ? new Date(history.billDate).toLocaleDateString() : '-'}</TableCell>
-          <TableCell>{history.pageNo || '-'}</TableCell>
-          <TableCell>{history.category || '-'}</TableCell>
+          <TableCell>{history.extraDetails?.billDate ? new Date(history.extraDetails.billDate).toLocaleDateString() : '-'}</TableCell>
+          <TableCell>{history.extraDetails?.pageNo || '-'}</TableCell>
+          <TableCell>{history.extraDetails?.category || '-'}</TableCell>
           <TableCell className="text-center no-print">
             <AlertDialog>
               <AlertDialogTrigger asChild>
