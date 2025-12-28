@@ -15,7 +15,7 @@ export async function PUT(
     const body = await request.json();
     const { rate, gst, partyName, billDate, pageNo } = body;
 
-    if (rate === undefined || gst === undefined || !partyName) {
+    if (rate === undefined || gst === undefined || !partyName || !billDate || !pageNo) {
         return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
     }
     
@@ -38,7 +38,7 @@ export async function PUT(
       finalRate,
       partyName,
       updatedAt: new Date(),
-      billDate: billDate,
+      billDate: new Date(billDate),
       pageNo: pageNo,
     };
 

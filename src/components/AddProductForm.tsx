@@ -17,8 +17,8 @@ const formSchema = z.object({
   gst: z.coerce.number().min(0, 'GST must be 0 or more.'),
   unit: z.string().min(1, 'Unit is required.'),
   partyName: z.string().min(2, 'Party name must be at least 2 characters.'),
-  billDate: z.string().optional(),
-  pageNo: z.string().optional(),
+  billDate: z.string().min(1, 'Bill date is required.'),
+  pageNo: z.string().min(1, 'Page number is required.'),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -46,18 +46,11 @@ export function AddProductForm({ onProductAdded }: AddProductFormProps) {
   const onSubmit: SubmitHandler<FormValues> = async (values) => {
     setIsSubmitting(true);
     
-    // Ensure empty strings are not sent for optional fields
-    const payload = { 
-        ...values,
-        billDate: values.billDate || undefined,
-        pageNo: values.pageNo || undefined,
-    };
-    
     try {
       const response = await fetch('/api/product', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(values),
       });
       const result = await response.json();
       

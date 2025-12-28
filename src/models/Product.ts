@@ -6,8 +6,8 @@ export interface IRate {
   finalRate: number;
   partyName: string;
   updatedAt: Date;
-  billDate?: Date;
-  pageNo?: string;
+  billDate: Date;
+  pageNo: string;
 }
 
 export interface IProduct extends Document {
@@ -23,8 +23,8 @@ const RateSchema: Schema<IRate> = new Schema({
   finalRate: { type: Number, required: true },
   partyName: { type: String, required: true, trim: true },
   updatedAt: { type: Date, required: true },
-  billDate: { type: Date },
-  pageNo: { type: String, trim: true },
+  billDate: { type: Date, required: true },
+  pageNo: { type: String, required: true, trim: true },
 }, { _id: false });
 
 const ProductSchema: Schema<IProduct> = new Schema({

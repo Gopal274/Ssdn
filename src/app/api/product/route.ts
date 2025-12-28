@@ -10,15 +10,11 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { productName, unit, rate, gst, partyName, billDate, pageNo } = body;
 
-        if (!productName || !unit || rate === undefined || gst === undefined || !partyName) {
+        if (!productName || !unit || rate === undefined || gst === undefined || !partyName || !billDate || !pageNo) {
             return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
         }
 
         const finalRate = calculateFinalRate(rate, gst);
-
-        // Sanitize optional fields. If they are empty strings, store them as undefined.
-        const sanitizedBillDate = billDate && billDate !== '' ? new Date(billDate) : undefined;
-        const sanitizedPageNo = pageNo && pageNo !== '' ? pageNo : undefined;
 
         const newProductData = {
               productName,
@@ -29,8 +25,8 @@ export async function POST(request: Request) {
                 finalRate,
                 partyName,
                 updatedAt: new Date(),
-                billDate: sanitizedBillDate,
-                pageNo: sanitizedPageNo,
+                billDate: new Date(billDate),
+                pageNo: pageNo,
               },
               rateHistory: [],
             };

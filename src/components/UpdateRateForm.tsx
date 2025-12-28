@@ -17,8 +17,8 @@ const formSchema = z.object({
   rate: z.coerce.number().positive('Rate must be a positive number.'),
   gst: z.coerce.number().min(0, 'GST must be 0 or more.'),
   partyName: z.string().min(2, 'Party name must be at least 2 characters.'),
-  billDate: z.string().optional(),
-  pageNo: z.string().optional(),
+  billDate: z.string().min(1, 'Bill date is required.'),
+  pageNo: z.string().min(1, 'Page number is required.'),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -31,6 +31,17 @@ interface UpdateRateFormProps {
 export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const formatDateForInput = (date: Date | string | undefined) => {
+    if (!date) return '';
+    if (typeof date === 'string') return date;
+    // Basic formatting, you might want to use a library like date-fns for more robust formatting
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -38,25 +49,19 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
       rate: product.currentRate?.rate ?? 0,
       gst: product.currentRate?.gst ?? 0,
       partyName: product.currentRate?.partyName ?? '',
-      billDate: product.currentRate?.billDate instanceof Date ? product.currentRate.billDate.toLocaleDateString() : product.currentRate?.billDate ?? '',
+      billDate: formatDateForInput(product.currentRate?.billDate) ?? '',
       pageNo: product.currentRate?.pageNo ?? '',
     },
   });
 
   const onSubmit: SubmitHandler<FormValues> = async (values) => {
     setIsSubmitting(true);
-    
-    const payload = { 
-        ...values,
-        billDate: values.billDate || undefined,
-        pageNo: values.pageNo || undefined,
-    };
 
     try {
       const response = await fetch(`/api/product/${product._id}/update-rate`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(values),
       });
 
       const result = await response.json();
@@ -91,7 +96,7 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
                     <span>GST: {product.currentRate.gst.toFixed(2)}%</span>
                     <span>Final: {product.currentRate.finalRate.toFixed(2)}</span>
                     <span>Party: {product.currentRate.partyName}</span>
-                    {product.currentRate.billDate && <span>Bill Date: {product.currentRate.billDate instanceof Date ? product.currentRate.billDate.toLocaleDateString() : product.currentRate.billDate}</span>}
+                    {product.currentRate.billDate && <span>Bill Date: {formatDateForInput(product.currentRate.billDate)}</span>}
                     {product.currentRate.pageNo && <span>Page No: {product.currentRate.pageNo}</span>}
                 </div>
             </CardContent>
