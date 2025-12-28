@@ -5,12 +5,13 @@ import { useState } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Sparkles } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { suggestCategory } from '@/ai/flows/suggest-category-flow';
 
 const formSchema = z.object({
   productName: z.string().min(2, 'Product name must be at least 2 characters.'),
@@ -34,6 +35,8 @@ interface AddProductFormProps {
 export function AddProductForm({ onProductAdded, uniqueUnits, uniquePartyNames }: AddProductFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuggesting, setIsSuggesting] = useState(false);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -47,6 +50,41 @@ export function AddProductForm({ onProductAdded, uniqueUnits, uniquePartyNames }
       category: '',
     },
   });
+
+  const handleSuggestCategory = async () => {
+    const productName = form.getValues('productName');
+    if (!productName) {
+        toast({
+            title: 'Product Name Required',
+            description: 'Please enter a product name before suggesting a category.',
+            variant: 'destructive'
+        });
+        return;
+    }
+
+    setIsSuggesting(true);
+    try {
+        const result = await suggestCategory({ productName });
+        if (result.category) {
+            form.setValue('category', result.category, { shouldValidate: true });
+            toast({
+                title: 'Category Suggested!',
+                description: `Suggested category: "${result.category}"`,
+            });
+        } else {
+             throw new Error('AI did not return a category.');
+        }
+    } catch (error) {
+        toast({
+            title: 'Suggestion Failed',
+            description: error instanceof Error ? error.message : 'Could not suggest a category.',
+            variant: 'destructive',
+        });
+    } finally {
+        setIsSuggesting(false);
+    }
+  };
+
 
   const onSubmit: SubmitHandler<FormValues> = async (values) => {
     setIsSubmitting(true);
@@ -199,15 +237,27 @@ export function AddProductForm({ onProductAdded, uniqueUnits, uniquePartyNames }
                 </FormItem>
               )}
             />
-            <FormField
+             <FormField
               control={form.control}
               name="category"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category (Opt.)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Spices" {...field} />
-                  </FormControl>
+                  <div className="flex items-center gap-2">
+                    <FormControl>
+                      <Input placeholder="e.g., Spices" {...field} />
+                    </FormControl>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="icon" 
+                      onClick={handleSuggestCategory}
+                      disabled={isSuggesting}
+                      title="Suggest Category with AI"
+                    >
+                      {isSuggesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                    </Button>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
