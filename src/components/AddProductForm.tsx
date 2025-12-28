@@ -24,9 +24,11 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface AddProductFormProps {
   onProductAdded: () => void;
+  uniqueUnits: string[];
+  uniquePartyNames: string[];
 }
 
-export function AddProductForm({ onProductAdded }: AddProductFormProps) {
+export function AddProductForm({ onProductAdded, uniqueUnits, uniquePartyNames }: AddProductFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useForm<FormValues>({
@@ -124,7 +126,12 @@ export function AddProductForm({ onProductAdded }: AddProductFormProps) {
               <FormItem>
                 <FormLabel>Unit</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Kg, Pkt" {...field} />
+                  <>
+                    <Input placeholder="e.g., Kg, Pkt" {...field} list="unit-suggestions" />
+                    <datalist id="unit-suggestions">
+                      {uniqueUnits.map(unit => <option key={unit} value={unit} />)}
+                    </datalist>
+                  </>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -137,7 +144,12 @@ export function AddProductForm({ onProductAdded }: AddProductFormProps) {
               <FormItem>
                 <FormLabel>Party Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Sharma Traders" {...field} />
+                   <>
+                    <Input placeholder="e.g., Sharma Traders" {...field} list="party-suggestions" />
+                    <datalist id="party-suggestions">
+                      {uniquePartyNames.map(party => <option key={party} value={party} />)}
+                    </datalist>
+                  </>
                 </FormControl>
                 <FormMessage />
               </FormItem>

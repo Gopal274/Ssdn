@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -217,7 +218,11 @@ export default function ProductTable() {
                 <DialogHeader>
                   <DialogTitle className="font-headline">Add New Product</DialogTitle>
                 </DialogHeader>
-                <AddProductForm onProductAdded={handleProductAdded} />
+                <AddProductForm 
+                  onProductAdded={handleProductAdded}
+                  uniqueUnits={uniqueUnits}
+                  uniquePartyNames={uniquePartyNames}
+                />
               </DialogContent>
             </Dialog>
           </div>
