@@ -29,7 +29,7 @@ import { Input } from '@/components/ui/input';
 import { ProductTableRow } from './ProductTableRow';
 import { AddProductForm } from './AddProductForm';
 
-type SortKey = 'productName' | 'updatedAt';
+type SortKey = 'productName' | 'updatedAt' | 'rate';
 type SortDirection = 'asc' | 'desc';
 
 const GST_SLABS = [0, 5, 12, 18, 28];
@@ -45,7 +45,8 @@ export default function ProductTable() {
   const [partyNameFilter, setPartyNameFilter] = useState<string[]>([]);
   const [partyNameSearch, setPartyNameSearch] = useState('');
   const [gstFilter, setGstFilter] = useState<number[]>([]);
-  
+  const [unitFilter, setUnitFilter] = useState<string[]>([]);
+
   const uniquePartyNames = useMemo(() => {
     const names = products
       .map(p => p.currentRate?.partyName)
@@ -53,8 +54,13 @@ export default function ProductTable() {
     return [...new Set(names)].sort((a, b) => a.localeCompare(b));
   }, [products]);
 
+  const uniqueUnits = useMemo(() => {
+    const units = products.map(p => p.unit).filter((unit): unit is string => !!unit);
+    return [...new Set(units)].sort((a, b) => a.localeCompare(b));
+  }, [products]);
+
   const filteredPartyNames = useMemo(() => {
-    return uniquePartyNames.filter(name => 
+    return uniquePartyNames.filter(name =>
       name.toLowerCase().includes(partyNameSearch.toLowerCase())
     );
   }, [uniquePartyNames, partyNameSearch]);
@@ -87,7 +93,7 @@ export default function ProductTable() {
 
     // Apply party name filter
     if (partyNameFilter.length > 0) {
-      sortableProducts = sortableProducts.filter(p => 
+      sortableProducts = sortableProducts.filter(p =>
         p.currentRate?.partyName && partyNameFilter.includes(p.currentRate.partyName)
       );
     }
@@ -98,6 +104,14 @@ export default function ProductTable() {
         p.currentRate?.gst !== undefined && gstFilter.includes(p.currentRate.gst)
       );
     }
+    
+    // Apply Unit filter
+    if (unitFilter.length > 0) {
+      sortableProducts = sortableProducts.filter(p => 
+        unitFilter.includes(p.unit)
+      );
+    }
+
 
     // Apply sorting
     if (sortConfig.key) {
@@ -107,11 +121,14 @@ export default function ProductTable() {
         if (sortConfig.key === 'productName') {
           aValue = a.productName.toLowerCase();
           bValue = b.productName.toLowerCase();
+        } else if (sortConfig.key === 'rate') {
+          aValue = a.currentRate?.rate || 0;
+          bValue = b.currentRate?.rate || 0;
         } else { // 'updatedAt'
           aValue = new Date(a.currentRate?.updatedAt || 0).getTime();
           bValue = new Date(b.currentRate?.updatedAt || 0).getTime();
         }
-        
+
         if (aValue < bValue) {
           return sortConfig.direction === 'asc' ? -1 : 1;
         }
@@ -122,7 +139,7 @@ export default function ProductTable() {
       });
     }
     return sortableProducts;
-  }, [products, sortConfig, partyNameFilter, gstFilter]);
+  }, [products, sortConfig, partyNameFilter, gstFilter, unitFilter]);
 
 
   const handleProductAdded = () => {
@@ -137,19 +154,27 @@ export default function ProductTable() {
   const handleProductDeleted = (deletedProductId: string) => {
     setProducts(prevProducts => prevProducts.filter(p => p._id !== deletedProductId));
   }
-  
+
   const requestSort = (key: SortKey, direction: SortDirection) => {
     setSortConfig({ key, direction });
   };
-  
+
   const handlePartyNameFilterChange = (partyName: string) => {
-    setPartyNameFilter(prev => 
-      prev.includes(partyName) 
+    setPartyNameFilter(prev =>
+      prev.includes(partyName)
         ? prev.filter(p => p !== partyName)
         : [...prev, partyName]
     );
   };
   
+  const handleUnitFilterChange = (unit: string) => {
+    setUnitFilter(prev =>
+      prev.includes(unit)
+        ? prev.filter(u => u !== unit)
+        : [...prev, unit]
+    );
+  };
+
   const handleGstFilterChange = (gstSlab: number) => {
     setGstFilter(prev =>
       prev.includes(gstSlab)
@@ -224,8 +249,64 @@ export default function ProductTable() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableHead>
-                  <TableHead className="text-right font-bold text-foreground">Rate</TableHead>
-                  <TableHead className="font-bold text-foreground">Unit</TableHead>
+                  <TableHead className="text-right font-bold text-foreground">
+                     <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8">
+                            Rate
+                            <ArrowUpDown className="ml-2 h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                           <DropdownMenuItem onClick={() => requestSort('rate', 'asc')}>
+                            Sort Low to High
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => requestSort('rate', 'desc')}>
+                            Sort High to Low
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                  </TableHead>
+                  <TableHead className="font-bold text-foreground">
+                    <div className='flex items-center gap-1'>
+                      Unit
+                       <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" disabled={uniqueUnits.length === 0}>
+                              <Filter className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent 
+                          align="start" 
+                          onCloseAutoFocus={(e) => e.preventDefault()}
+                        >
+                          <DropdownMenuLabel>Filter by Unit</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                           {uniqueUnits.map(unit => (
+                              <DropdownMenuCheckboxItem
+                                key={unit}
+                                checked={unitFilter.includes(unit)}
+                                onSelect={(e) => e.preventDefault()}
+                                onClick={() => handleUnitFilterChange(unit)}
+                              >
+                                {unit}
+                              </DropdownMenuCheckboxItem>
+                          ))}
+                          {unitFilter.length > 0 && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onSelect={() => setUnitFilter([])}
+                                className="text-destructive"
+                              >
+                                Clear unit filter
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </TableHead>
                   <TableHead className="text-right font-bold text-foreground">
                     <div className='flex items-center justify-end gap-1'>
                        GST %
