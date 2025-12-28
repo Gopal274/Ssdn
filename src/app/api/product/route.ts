@@ -1,54 +1,58 @@
 
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import Product, { IProduct } from '@/models/Product';
+import Product from '@/models/Product';
 import { calculateFinalRate } from '@/lib/utils';
 
 export async function POST(request: Request) {
   await dbConnect();
     try {
         const body = await request.json();
-            const { productName, unit, rate, gst, partyName, billDate, pageNo } = body;
+        const { productName, unit, rate, gst, partyName, billDate, pageNo } = body;
 
-                if (!productName || !unit || rate === undefined || gst === undefined || !partyName) {
-                        return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
-                            }
+        if (!productName || !unit || rate === undefined || gst === undefined || !partyName) {
+            return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
+        }
 
-                                const finalRate = calculateFinalRate(rate, gst);
+        const finalRate = calculateFinalRate(rate, gst);
 
-                                    const newProductData = {
-                                          productName,
-                                                unit,
-                                                      currentRate: {
-                                                              rate,
-                                                                      gst,
-                                                                              finalRate,
-                                                                                      partyName,
-                                                                                              updatedAt: new Date(),
-                                                                                                      billDate: billDate,
-                                                                                                              pageNo: pageNo,
-                                                                                                                    },
-                                                                                                                          rateHistory: [],
-                                                                                                                              };
+        // Sanitize optional fields. If they are empty strings, store them as undefined.
+        const sanitizedBillDate = billDate && billDate !== '' ? new Date(billDate) : undefined;
+        const sanitizedPageNo = pageNo && pageNo !== '' ? pageNo : undefined;
 
-                                                                                                                                  const product = await Product.create(newProductData);
-                                                                                                                                      
-                                                                                                                                          return NextResponse.json({ success: true, data: product }, { status: 201 });
-                                                                                                                                            } catch (error) {
-                                                                                                                                                let message = 'An unknown error occurred';
-                                                                                                                                                    let statusCode = 500;
-                                                                                                                                                        
-                                                                                                                                                            if (error instanceof Error) {
-                                                                                                                                                                    // Mongoose duplicate key error
-                                                                                                                                                                            if ((error as any).code === 11000) {
-                                                                                                                                                                                        message = 'A product with this name already exists.';
-                                                                                                                                                                                                    statusCode = 409; // Conflict
-                                                                                                                                                                                                            } else {
-                                                                                                                                                                                                                        message = error.message;
-                                                                                                                                                                                                                                    statusCode = 400; // Bad Request
-                                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                                                }
-                                                                                                                                                                                                                                                    
-                                                                                                                                                                                                                                                        return NextResponse.json({ success: false, message }, { status: statusCode });
-                                                                                                                                                                                                                                                          }
+        const newProductData = {
+              productName,
+              unit,
+              currentRate: {
+                rate,
+                gst,
+                finalRate,
+                partyName,
+                updatedAt: new Date(),
+                billDate: sanitizedBillDate,
+                pageNo: sanitizedPageNo,
+              },
+              rateHistory: [],
+            };
+
+        const product = await Product.create(newProductData);
+        
+        return NextResponse.json({ success: true, data: product }, { status: 201 });
+    } catch (error) {
+        let message = 'An unknown error occurred';
+        let statusCode = 500;
+        
+        if (error instanceof Error) {
+            // Mongoose duplicate key error
+            if ((error as any).code === 11000) {
+                message = 'A product with this name already exists.';
+                statusCode = 409; // Conflict
+            } else {
+                message = error.message;
+                statusCode = 400; // Bad Request
+            }
+        }
+        
+        return NextResponse.json({ success: false, message }, { status: statusCode });
+    }
 }

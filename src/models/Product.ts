@@ -1,4 +1,3 @@
-
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 
 export interface IRate {
@@ -7,7 +6,7 @@ export interface IRate {
   finalRate: number;
   partyName: string;
   updatedAt: Date;
-  billDate?: string;
+  billDate?: Date;
   pageNo?: string;
 }
 
@@ -24,7 +23,7 @@ const RateSchema: Schema<IRate> = new Schema({
   finalRate: { type: Number, required: true },
   partyName: { type: String, required: true, trim: true },
   updatedAt: { type: Date, required: true },
-  billDate: { type: String, trim: true },
+  billDate: { type: Date },
   pageNo: { type: String, trim: true },
 }, { _id: false });
 
