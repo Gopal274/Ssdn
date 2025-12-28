@@ -18,7 +18,6 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ProductTableRow } from './ProductTableRow';
 import { AddProductForm } from './AddProductForm';
-import { ScrollArea } from './ui/scroll-area';
 
 export default function ProductTable() {
   const [products, setProducts] = useState<IProduct[]>([]);
@@ -81,9 +80,8 @@ export default function ProductTable() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="rounded-md border">
-          <ScrollArea className="w-full whitespace-nowrap">
-            <Table>
+        <div className="rounded-md border overflow-x-auto">
+            <Table className="min-w-[800px]">
               {!loading && products.length === 0 && (
                 <TableCaption>
                   {error ? `Error: ${error}` : 'No products found. Add one to get started!'}
@@ -98,7 +96,7 @@ export default function ProductTable() {
                   <TableHead className="text-right">GST %</TableHead>
                   <TableHead className="text-right font-bold">Final Rate</TableHead>
                   <TableHead>Party Name</TableHead>
-                  <TableHead className="text-center">Actions</TableHead>
+                  <TableHead className="text-center w-[120px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -124,7 +122,6 @@ export default function ProductTable() {
                 )}
               </TableBody>
             </Table>
-          </ScrollArea>
         </div>
       </CardContent>
     </Card>
