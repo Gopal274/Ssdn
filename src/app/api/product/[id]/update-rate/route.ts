@@ -37,8 +37,8 @@ export async function PUT(
       finalRate,
       partyName,
       updatedAt: new Date(),
-      billDate: billDate ? new Date(billDate) : undefined,
-      pageNo,
+      billDate: billDate || undefined, // Use billDate from body
+      pageNo: pageNo || undefined, // Use pageNo from body
     };
 
     await product.save();
