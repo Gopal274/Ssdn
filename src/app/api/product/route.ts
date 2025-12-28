@@ -24,8 +24,8 @@ export async function POST(request: Request) {
         finalRate,
         partyName,
         updatedAt: new Date(),
-        billDate: billDate || undefined,
-        pageNo: pageNo || undefined,
+        billDate: billDate,
+        pageNo: pageNo,
       },
       rateHistory: [],
     };
