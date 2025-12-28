@@ -94,8 +94,26 @@ export default function ProductTable() {
     try {
       const res = await fetch('/api/products', { cache: 'no-store' });
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to fetch products');
+        const contentType = res.headers.get('content-type') || '';
+        let message = `Failed to fetch products (${res.status} ${res.statusText})`;
+        if (contentType.includes('application/json')) {
+          try {
+            const errorData = await res.json();
+            message = errorData?.message || message;
+          } catch (e) {
+            // ignore and fallback to default message
+          }
+        } else {
+          const text = await res.text();
+          if (text && /^\s*</.test(text)) {
+            // HTML response (likely server error/stacktrace) — prefer generic status
+            const statusText = (res.statusText || '').trim();
+            message = statusText ? `Server error (${res.status} ${statusText})` : `Server error (${res.status})`;
+          } else if (text) {
+            message = text;
+          }
+        }
+        throw new Error(message);
       }
       const data = await res.json();
       setProducts(data.data);
