@@ -126,12 +126,12 @@ export function AddProductForm({ onProductAdded, uniqueUnits, uniquePartyNames }
               <FormItem>
                 <FormLabel>Unit</FormLabel>
                 <FormControl>
-                  <>
+                  <div>
                     <Input placeholder="e.g., Kg, Pkt" {...field} list="unit-suggestions" />
                     <datalist id="unit-suggestions">
                       {uniqueUnits.map(unit => <option key={unit} value={unit} />)}
                     </datalist>
-                  </>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -144,12 +144,12 @@ export function AddProductForm({ onProductAdded, uniqueUnits, uniquePartyNames }
               <FormItem>
                 <FormLabel>Party Name</FormLabel>
                 <FormControl>
-                   <>
+                   <div>
                     <Input placeholder="e.g., Sharma Traders" {...field} list="party-suggestions" />
                     <datalist id="party-suggestions">
                       {uniquePartyNames.map(party => <option key={party} value={party} />)}
                     </datalist>
-                  </>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
