@@ -1,8 +1,7 @@
-
 'use client';
 
 import { useState, Fragment } from 'react';
-import type { IProduct } from '@/models/Product';
+import type { IProduct, IRate } from '@/models/Product';
 import {
   Dialog,
   DialogContent,
@@ -69,6 +68,35 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
       });
     }
   };
+
+  const handleDeleteHistory = async (e: React.MouseEvent, historyEntry: IRate) => {
+    e.stopPropagation();
+     try {
+      const response = await fetch(`/api/product/${product._id}/history`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ updatedAt: historyEntry.updatedAt }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to delete history entry');
+      }
+
+      toast({
+        title: 'History Deleted',
+        description: `Rate from ${new Date(historyEntry.updatedAt).toLocaleDateString()} has been removed.`,
+      });
+      onRateUpdated(); // This will re-fetch products and update the UI
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Could not delete history entry.',
+        variant: 'destructive',
+      });
+    }
+  }
   
   const hasHistory = product.rateHistory && product.rateHistory.length > 0;
 
@@ -78,7 +106,7 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
         <TableRow>
             <TableCell>{index + 1}</TableCell>
             <TableCell>{product.productName}</TableCell>
-            <TableCell colSpan={6} className="text-muted-foreground">Product data is incomplete.</TableCell>
+            <TableCell colSpan={5} className="text-muted-foreground">Product data is incomplete.</TableCell>
              <TableCell className="text-center">
                 <div className="flex items-center justify-center space-x-1">
                   <Dialog open={isUpdateModalOpen} onOpenChange={setUpdateModalOpen}>
@@ -195,7 +223,27 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
           <TableCell className="text-right">{history.gst.toFixed(2)}%</TableCell>
           <TableCell className="text-right font-medium">{history.finalRate.toFixed(2)}</TableCell>
           <TableCell>{history.partyName}</TableCell>
-          <TableCell></TableCell>
+          <TableCell className="text-center">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="icon" title="Delete History Entry" className="h-6 w-6" onClick={(e) => e.stopPropagation()}>
+                  <Trash2 className="h-4 w-4 text-destructive/70 hover:text-destructive" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete this history entry?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete the rate from {new Date(history.updatedAt).toLocaleDateString()} for "{product.productName}". This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={(e) => handleDeleteHistory(e, history)}>Delete</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </TableCell>
         </TableRow>
       ))}
     </Fragment>
