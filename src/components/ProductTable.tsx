@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { IProduct } from '@/models/Product';
-import { PlusCircle, Loader2, ArrowUpDown } from 'lucide-react';
+import { PlusCircle, Loader2, ArrowUpDown, Filter } from 'lucide-react';
 
 import {
   Table,
@@ -18,6 +18,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,6 +39,15 @@ export default function ProductTable() {
   const [error, setError] = useState<string | null>(null);
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: SortDirection }>({ key: 'updatedAt', direction: 'desc' });
+  const [partyNameFilter, setPartyNameFilter] = useState<string[]>([]);
+  
+  const uniquePartyNames = useMemo(() => {
+    const names = products
+      .map(p => p.currentRate?.partyName)
+      .filter((name): name is string => !!name);
+    return [...new Set(names)].sort((a, b) => a.localeCompare(b));
+  }, [products]);
+
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -59,8 +71,17 @@ export default function ProductTable() {
     fetchProducts();
   }, [fetchProducts]);
 
-  const sortedProducts = useMemo(() => {
-    const sortableProducts = [...products];
+  const filteredAndSortedProducts = useMemo(() => {
+    let sortableProducts = [...products];
+
+    // Apply party name filter
+    if (partyNameFilter.length > 0) {
+      sortableProducts = sortableProducts.filter(p => 
+        p.currentRate?.partyName && partyNameFilter.includes(p.currentRate.partyName)
+      );
+    }
+
+    // Apply sorting
     if (sortConfig.key) {
       sortableProducts.sort((a, b) => {
         let aValue: string | number, bValue: string | number;
@@ -83,7 +104,7 @@ export default function ProductTable() {
       });
     }
     return sortableProducts;
-  }, [products, sortConfig]);
+  }, [products, sortConfig, partyNameFilter]);
 
 
   const handleProductAdded = () => {
@@ -101,6 +122,14 @@ export default function ProductTable() {
   
   const requestSort = (key: SortKey, direction: SortDirection) => {
     setSortConfig({ key, direction });
+  };
+  
+  const handlePartyNameFilterChange = (partyName: string) => {
+    setPartyNameFilter(prev => 
+      prev.includes(partyName) 
+        ? prev.filter(p => p !== partyName)
+        : [...prev, partyName]
+    );
   };
 
 
@@ -173,7 +202,43 @@ export default function ProductTable() {
                   <TableHead className="font-bold text-foreground">Unit</TableHead>
                   <TableHead className="text-right font-bold text-foreground">GST %</TableHead>
                   <TableHead className="text-right font-bold text-foreground">Final Rate</TableHead>
-                  <TableHead className="font-bold text-foreground">Party Name</TableHead>
+                  <TableHead className="font-bold text-foreground">
+                    <div className='flex items-center gap-1'>
+                       Party Name
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" disabled={uniquePartyNames.length === 0}>
+                              <Filter className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                          <DropdownMenuLabel>Filter by Party</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                           {uniquePartyNames.map(partyName => (
+                              <DropdownMenuCheckboxItem
+                                key={partyName}
+                                checked={partyNameFilter.includes(partyName)}
+                                onSelect={(e) => e.preventDefault()} // prevent menu from closing
+                                onClick={() => handlePartyNameFilterChange(partyName)}
+                              >
+                                {partyName}
+                              </DropdownMenuCheckboxItem>
+                          ))}
+                          {partyNameFilter.length > 0 && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onSelect={() => setPartyNameFilter([])}
+                                className="text-destructive"
+                              >
+                                Clear filters
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </TableHead>
                   <TableHead className="text-center w-[120px] font-bold text-foreground">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -188,7 +253,7 @@ export default function ProductTable() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  sortedProducts.map((product, index) => (
+                  filteredAndSortedProducts.map((product, index) => (
                     <ProductTableRow
                       key={product._id}
                       product={product}
