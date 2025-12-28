@@ -185,16 +185,16 @@ export default function ProductTable() {
 
 
   const totalProducts = filteredAndSortedProducts.length;
-  const isShowingAll = rowsPerPage === totalProducts;
+  const isShowingAll = rowsPerPage === 0;
 
   const paginatedProducts = useMemo(() => {
-    if (isShowingAll || !rowsPerPage) return filteredAndSortedProducts;
+    if (isShowingAll) return filteredAndSortedProducts;
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
     return filteredAndSortedProducts.slice(startIndex, endIndex);
   }, [filteredAndSortedProducts, currentPage, rowsPerPage, isShowingAll]);
 
-  const totalPages = isShowingAll || !rowsPerPage ? 1 : Math.ceil(totalProducts / rowsPerPage);
+  const totalPages = isShowingAll ? 1 : Math.ceil(totalProducts / rowsPerPage);
 
 
   const handleProductAdded = () => {
@@ -240,7 +240,7 @@ export default function ProductTable() {
   
   const handleSelectAllParties = () => {
     const allVisiblePartyNames = filteredPartyNamesForDropdown.map(p => p);
-    const allSelected = allVisiblePartyNames.every(name => partyNameFilter.includes(name));
+    const allSelected = allVisiblePartyNames.length > 0 && allVisiblePartyNames.every(name => partyNameFilter.includes(name));
 
     if (allSelected) {
       // Deselect all
@@ -255,10 +255,10 @@ export default function ProductTable() {
   return (
     <Card className="shadow-lg bg-card/80 backdrop-blur-sm card">
       <CardHeader className="no-print">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <CardTitle className="font-headline">Goods Rate Register</CardTitle>
-          <div className="flex w-full sm:w-auto sm:justify-end gap-2">
-            <div className="relative w-full sm:w-64">
+        <div className="flex flex-col items-center gap-4">
+          <CardTitle className="font-headline text-center text-primary w-full">Goods Rate Register</CardTitle>
+          <div className="w-full flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div className="relative w-full sm:flex-1 sm:max-w-xs">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search products..."
@@ -267,26 +267,28 @@ export default function ProductTable() {
                 className="pl-8"
               />
             </div>
-            <Button variant="outline" onClick={() => window.print()} className="shrink-0">
-                <Printer className="mr-2 h-4 w-4" /> Print
-            </Button>
-            <Dialog open={isAddModalOpen} onOpenChange={setAddModalOpen}>
-              <DialogTrigger asChild>
-                <Button className="shrink-0">
-                  <PlusCircle className="mr-2 h-4 w-4" /> Add Product
+            <div className="flex w-full sm:w-auto justify-end gap-2">
+                <Button variant="outline" onClick={() => window.print()} className="shrink-0">
+                    <Printer className="mr-2 h-4 w-4" /> Print
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[480px]">
-                <DialogHeader>
-                  <DialogTitle className="font-headline">Add New Product</DialogTitle>
-                </DialogHeader>
-                <AddProductForm 
-                  onProductAdded={handleProductAdded}
-                  uniqueUnits={uniqueUnits}
-                  uniquePartyNames={uniquePartyNames}
-                />
-              </DialogContent>
-            </Dialog>
+                <Dialog open={isAddModalOpen} onOpenChange={setAddModalOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="shrink-0">
+                      <PlusCircle className="mr-2 h-4 w-4" /> Add Product
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[480px]">
+                    <DialogHeader>
+                      <DialogTitle className="font-headline">Add New Product</DialogTitle>
+                    </DialogHeader>
+                    <AddProductForm 
+                      onProductAdded={handleProductAdded}
+                      uniqueUnits={uniqueUnits}
+                      uniquePartyNames={uniquePartyNames}
+                    />
+                  </DialogContent>
+                </Dialog>
+            </div>
           </div>
         </div>
       </CardHeader>
@@ -542,15 +544,15 @@ export default function ProductTable() {
       </CardContent>
       <CardFooter className='no-print flex items-center justify-between pt-6'>
          <div className="text-sm text-muted-foreground">
-            {`Showing ${isShowingAll || !rowsPerPage ? 'all' : Math.min((currentPage - 1) * rowsPerPage + 1, totalProducts)}
-             to ${isShowingAll || !rowsPerPage ? totalProducts : Math.min(currentPage * rowsPerPage, totalProducts)}
+            {`Showing ${isShowingAll ? 'all' : Math.min((currentPage - 1) * rowsPerPage + 1, totalProducts)}
+             to ${isShowingAll ? totalProducts : Math.min(currentPage * rowsPerPage, totalProducts)}
              of ${totalProducts} products`}
         </div>
         <div className='flex items-center space-x-6'>
             <div className="flex items-center space-x-2">
                 <p className="text-sm font-medium">Rows per page</p>
                 <Select
-                    value={isShowingAll || !rowsPerPage ? 'all' : `${rowsPerPage}`}
+                    value={isShowingAll ? 'all' : `${rowsPerPage}`}
                     onValueChange={(value) => {
                         if (value === 'all') {
                             setRowsPerPage(0); // Using 0 or totalProducts to signify 'all'
@@ -581,7 +583,7 @@ export default function ProductTable() {
                     variant="outline"
                     className="h-8 w-8 p-0"
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={isShowingAll || !rowsPerPage || currentPage === 1}
+                    disabled={isShowingAll || currentPage === 1}
                 >
                     <span className="sr-only">Go to previous page</span>
                     <ChevronLeft className="h-4 w-4" />
@@ -590,7 +592,7 @@ export default function ProductTable() {
                     variant="outline"
                     className="h-8 w-8 p-0"
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={isShowingAll || !rowsPerPage || currentPage === totalPages}
+                    disabled={isShowingAll || currentPage === totalPages}
                 >
                     <span className="sr-only">Go to next page</span>
                     <ChevronRight className="h-4 w-4" />
