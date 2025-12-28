@@ -174,14 +174,13 @@ export default function ProductTable() {
                   <TableHead className="text-right font-bold text-foreground">GST %</TableHead>
                   <TableHead className="text-right font-bold text-foreground">Final Rate</TableHead>
                   <TableHead className="font-bold text-foreground">Party Name</TableHead>
-                  <TableHead className="font-bold text-foreground">Page No.</TableHead>
                   <TableHead className="text-center w-[120px] font-bold text-foreground">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="h-24 text-center">
+                    <TableCell colSpan={8} className="h-24 text-center">
                       <div className="flex justify-center items-center">
                         <Loader2 className="h-6 w-6 animate-spin text-primary" />
                         <span className="ml-2">Loading ledger...</span>

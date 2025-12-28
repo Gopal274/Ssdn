@@ -16,7 +16,6 @@ const formSchema = z.object({
   rate: z.coerce.number().positive('Rate must be a positive number.'),
   gst: z.coerce.number().min(0, 'GST must be 0 or more.'),
   partyName: z.string().min(2, 'Party name must be at least 2 characters.'),
-  pageNo: z.string().min(1, 'Page number is required.'),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -36,7 +35,6 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
       rate: product.currentRate?.rate ?? 0,
       gst: product.currentRate?.gst ?? 0,
       partyName: product.currentRate?.partyName ?? '',
-      pageNo: product.currentRate?.pageNo ?? '',
     },
   });
 
@@ -82,7 +80,6 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
                     <span>GST: {product.currentRate.gst.toFixed(2)}%</span>
                     <span>Final: {product.currentRate.finalRate.toFixed(2)}</span>
                     <span>Party: {product.currentRate.partyName}</span>
-                    {product.currentRate.pageNo && <span>Page No: {product.currentRate.pageNo}</span>}
                 </div>
             </CardContent>
         </Card>
@@ -131,20 +128,6 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
               </FormItem>
             )}
           />
-           <FormField
-              control={form.control}
-              name="pageNo"
-              render={({ field }) => (
-                  <FormItem>
-                  <FormLabel>Page No.</FormLabel>
-                  <FormControl>
-                      <Input placeholder="e.g., F-12, 23" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                  </FormItem>
-              )}
-          />
-
 
           <Button type="submit" disabled={isSubmitting} className="w-full mt-4">
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
