@@ -24,7 +24,7 @@ import {
 
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { PlusSquare, Trash2, ChevronRight, Pencil } from 'lucide-react';
+import { PlusSquare, Trash2, ChevronRight, Pencil, RotateCcw } from 'lucide-react';
 import { UpdateRateForm } from './UpdateRateForm';
 import { EditDetailsForm } from './EditDetailsForm';
 import { useToast } from '@/hooks/use-toast';
@@ -55,7 +55,7 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
     onRateUpdated();
   };
 
-  const handleDelete = async (e: React.MouseEvent) => {
+  const handleDeleteProduct = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent row click event
     try {
       const response = await fetch(`/api/product/${product._id}`, {
@@ -76,6 +76,30 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
         description: error instanceof Error ? error.message : 'Could not delete product.',
         variant: 'destructive',
       });
+    }
+  };
+
+  const handleDeleteCurrentRate = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+        const response = await fetch(`/api/product/${product._id}/current-rate`, {
+            method: 'DELETE',
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || 'Failed to revert rate');
+        }
+        toast({
+            title: 'Rate Reverted',
+            description: `The current rate for "${product.productName}" has been reverted to the previous one.`,
+        });
+        onRateUpdated();
+    } catch (error) {
+        toast({
+            title: 'Error',
+            description: error instanceof Error ? error.message : 'Could not revert rate.',
+            variant: 'destructive',
+        });
     }
   };
 
@@ -147,7 +171,7 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
+                        <AlertDialogAction onClick={handleDeleteProduct}>Continue</AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
@@ -229,6 +253,25 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
             </Dialog>
             <AlertDialog>
               <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="icon" title="Revert Current Rate" disabled={!hasHistory} onClick={(e) => e.stopPropagation()}>
+                  <RotateCcw className="h-4 w-4 text-orange-600" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure you want to revert?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will delete the current rate and restore the previous rate from history. This action cannot be easily undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteCurrentRate}>Revert</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
                 <Button variant="ghost" size="icon" title="Delete Product" onClick={(e) => e.stopPropagation()}>
                   <Trash2 className="h-5 w-5 text-destructive" />
                 </Button>
@@ -242,7 +285,7 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
+                  <AlertDialogAction onClick={handleDeleteProduct}>Continue</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
