@@ -50,7 +50,8 @@ export function AddProductForm({ onProductAdded }: AddProductFormProps) {
   const onSubmit: SubmitHandler<FormValues> = async (values) => {
     setIsSubmitting(true);
     const finalRate = calculateFinalRate(values.rate, values.gst);
-    const payload = { ...values, finalRate };
+    
+    const payload = { ...values, billDate: values.billDate ? values.billDate.toISOString() : undefined, finalRate };
 
     try {
       const response = await fetch('/api/product', {
