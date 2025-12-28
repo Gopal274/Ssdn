@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { IProduct } from '@/models/Product';
-import { PlusCircle, Loader2, ArrowUpDown, Filter } from 'lucide-react';
+import { PlusCircle, Loader2, ArrowUpDown, Filter, Search } from 'lucide-react';
 
 import {
   Table,
@@ -17,7 +17,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuCheckboxItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -42,6 +41,7 @@ export default function ProductTable() {
   const [error, setError] = useState<string | null>(null);
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: SortDirection }>({ key: 'updatedAt', direction: 'desc' });
+  const [productNameSearch, setProductNameSearch] = useState('');
   const [partyNameFilter, setPartyNameFilter] = useState<string[]>([]);
   const [partyNameSearch, setPartyNameSearch] = useState('');
   const [gstFilter, setGstFilter] = useState<number[]>([]);
@@ -91,6 +91,13 @@ export default function ProductTable() {
   const filteredAndSortedProducts = useMemo(() => {
     let sortableProducts = [...products];
 
+    // Apply product name search
+    if (productNameSearch) {
+      sortableProducts = sortableProducts.filter(p =>
+        p.productName.toLowerCase().includes(productNameSearch.toLowerCase())
+      );
+    }
+
     // Apply party name filter
     if (partyNameFilter.length > 0) {
       sortableProducts = sortableProducts.filter(p =>
@@ -139,7 +146,7 @@ export default function ProductTable() {
       });
     }
     return sortableProducts;
-  }, [products, sortConfig, partyNameFilter, gstFilter, unitFilter]);
+  }, [products, sortConfig, productNameSearch, partyNameFilter, gstFilter, unitFilter]);
 
 
   const handleProductAdded = () => {
@@ -189,19 +196,30 @@ export default function ProductTable() {
       <CardHeader>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <CardTitle className="font-headline">Goods Rate Register</CardTitle>
-          <Dialog open={isAddModalOpen} onOpenChange={setAddModalOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <PlusCircle className="mr-2 h-4 w-4" /> Add New Product
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[480px]">
-              <DialogHeader>
-                <DialogTitle className="font-headline">Add New Product</DialogTitle>
-              </DialogHeader>
-              <AddProductForm onProductAdded={handleProductAdded} />
-            </DialogContent>
-          </Dialog>
+          <div className="flex w-full sm:w-auto sm:justify-end gap-2">
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search products..."
+                value={productNameSearch}
+                onChange={(e) => setProductNameSearch(e.target.value)}
+                className="pl-8"
+              />
+            </div>
+            <Dialog open={isAddModalOpen} onOpenChange={setAddModalOpen}>
+              <DialogTrigger asChild>
+                <Button className="shrink-0">
+                  <PlusCircle className="mr-2 h-4 w-4" /> Add Product
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[480px]">
+                <DialogHeader>
+                  <DialogTitle className="font-headline">Add New Product</DialogTitle>
+                </DialogHeader>
+                <AddProductForm onProductAdded={handleProductAdded} />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -436,3 +454,5 @@ export default function ProductTable() {
     </Card>
   );
 }
+
+    
