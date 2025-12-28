@@ -8,8 +8,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   const { id } = params;
-  await dbConnect();
-
+  
   try {
     const body = await request.json();
     const { rate, gst, partyName } = body;
@@ -18,6 +17,7 @@ export async function PUT(
         return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
     }
     
+    await dbConnect();
     const product = await Product.findById(id);
 
     if (!product) {
@@ -25,7 +25,9 @@ export async function PUT(
     }
 
     // Push current rate to history
-    product.rateHistory.unshift(product.currentRate);
+    if (product.currentRate) {
+      product.rateHistory.unshift(product.currentRate);
+    }
 
     // Update current rate
     const finalRate = calculateFinalRate(rate, gst);

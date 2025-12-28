@@ -4,8 +4,6 @@ import Product, { IProduct } from '@/models/Product';
 import { calculateFinalRate } from '@/lib/utils';
 
 export async function POST(request: Request) {
-  await dbConnect();
-
   try {
     const body = await request.json();
     const { productName, unit, rate, gst, partyName } = body;
@@ -13,6 +11,8 @@ export async function POST(request: Request) {
     if (!productName || !unit || rate === undefined || gst === undefined || !partyName) {
         return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
     }
+
+    await dbConnect();
 
     const finalRate = calculateFinalRate(rate, gst);
 
@@ -37,7 +37,8 @@ export async function POST(request: Request) {
     let statusCode = 500;
     
     if (error instanceof Error) {
-        if (error.message.includes('E11000')) {
+        // Mongoose duplicate key error
+        if ((error as any).code === 11000) {
             message = 'A product with this name already exists.';
             statusCode = 409; // Conflict
         } else {

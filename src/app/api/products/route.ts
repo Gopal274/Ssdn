@@ -2,12 +2,9 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Product from '@/models/Product';
 
-export const dynamic = 'force-dynamic';
-
 export async function GET() {
-  await dbConnect();
-
   try {
+    await dbConnect();
     const products = await Product.find({}).sort({ 'currentRate.updatedAt': -1 });
     return NextResponse.json({ success: true, data: products });
   } catch (error) {
