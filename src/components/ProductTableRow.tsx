@@ -27,6 +27,12 @@ import { PlusSquare, Trash2, ChevronRight } from 'lucide-react';
 import { UpdateRateForm } from './UpdateRateForm';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface ProductTableRowProps {
   product: IProduct;
@@ -174,7 +180,18 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
         <TableCell className="text-right font-bold text-primary">
           {product.currentRate.finalRate.toFixed(2)}
         </TableCell>
-        <TableCell>{product.currentRate.partyName}</TableCell>
+        <TableCell>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <p className="truncate max-w-[200px]">{product.currentRate.partyName}</p>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{product.currentRate.partyName}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </TableCell>
         <TableCell>{product.currentRate.billDate ? new Date(product.currentRate.billDate).toLocaleDateString() : '-'}</TableCell>
         <TableCell>{product.currentRate.pageNo || '-'}</TableCell>
         <TableCell>{product.currentRate.category || '-'}</TableCell>

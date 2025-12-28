@@ -243,8 +243,8 @@ export default function ProductTable() {
               )}
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[100px] font-bold text-foreground">S.No</TableHead>
-                  <TableHead className="font-bold text-foreground">
+                  <TableHead className="w-[80px] font-bold text-foreground">S.No</TableHead>
+                  <TableHead className="font-bold text-foreground min-w-[200px]">
                      <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="-ml-4 h-8">
@@ -268,7 +268,7 @@ export default function ProductTable() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableHead>
-                  <TableHead className="text-right font-bold text-foreground">
+                  <TableHead className="text-right font-bold text-foreground min-w-[120px]">
                      <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" className="h-8">
@@ -286,7 +286,7 @@ export default function ProductTable() {
                         </DropdownMenuContent>
                       </DropdownMenu>
                   </TableHead>
-                  <TableHead className="font-bold text-foreground">
+                  <TableHead className="font-bold text-foreground min-w-[100px]">
                     <div className='flex items-center gap-1'>
                       Unit
                        <DropdownMenu>
@@ -326,7 +326,7 @@ export default function ProductTable() {
                       </DropdownMenu>
                     </div>
                   </TableHead>
-                  <TableHead className="text-right font-bold text-foreground">
+                  <TableHead className="text-right font-bold text-foreground min-w-[120px]">
                     <div className='flex items-center justify-end gap-1'>
                        GST %
                       <DropdownMenu>
@@ -366,8 +366,8 @@ export default function ProductTable() {
                       </DropdownMenu>
                     </div>
                   </TableHead>
-                  <TableHead className="text-right font-bold text-foreground">Final Rate</TableHead>
-                  <TableHead className="font-bold text-foreground">
+                  <TableHead className="text-right font-bold text-foreground min-w-[140px]">Final Rate</TableHead>
+                  <TableHead className="font-bold text-foreground min-w-[200px]">
                     <div className='flex items-center gap-1'>
                        Party Name
                       <DropdownMenu>
@@ -424,10 +424,10 @@ export default function ProductTable() {
                       </DropdownMenu>
                     </div>
                   </TableHead>
-                  <TableHead className="font-bold text-foreground">Bill Date</TableHead>
-                  <TableHead className="font-bold text-foreground">Page No.</TableHead>
-                  <TableHead className="font-bold text-foreground">Category</TableHead>
-                  <TableHead className="text-center w-[120px] font-bold text-foreground">Actions</TableHead>
+                  <TableHead className="font-bold text-foreground min-w-[130px]">Bill Date</TableHead>
+                  <TableHead className="font-bold text-foreground min-w-[120px]">Page No.</TableHead>
+                  <TableHead className="font-bold text-foreground min-w-[150px]">Category</TableHead>
+                  <TableHead className="text-center w-[100px] font-bold text-foreground">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
