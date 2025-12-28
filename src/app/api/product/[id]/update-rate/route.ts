@@ -24,7 +24,7 @@ export async function PUT(
       return NextResponse.json({ success: false, message: 'Product not found' }, { status: 404 });
     }
 
-    // Push current rate to history
+    // Push current rate to history if it exists
     if (product.currentRate) {
       product.rateHistory.unshift(product.currentRate);
     }
