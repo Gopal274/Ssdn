@@ -63,11 +63,9 @@ export default function ProductTable() {
     return [...new Set(units)].sort((a, b) => a.localeCompare(b));
   }, [products]);
 
-  const filteredAndSortedPartyNames = useMemo(() => {
+  const filteredPartyNamesForDropdown = useMemo(() => {
+    // This list is just for the dropdown checkboxes, it doesn't filter the main table directly with search
     return uniquePartyNames
-      .filter(name =>
-        name.toLowerCase().includes(partyNameSearch.toLowerCase())
-      )
       .sort((a, b) => {
         if (partySortDir === 'asc') {
           return a.localeCompare(b);
@@ -75,7 +73,7 @@ export default function ProductTable() {
           return b.localeCompare(a);
         }
       });
-  }, [uniquePartyNames, partyNameSearch, partySortDir]);
+  }, [uniquePartyNames, partySortDir]);
 
 
   const fetchProducts = useCallback(async () => {
@@ -109,8 +107,15 @@ export default function ProductTable() {
         p.productName.toLowerCase().includes(productNameSearch.toLowerCase())
       );
     }
+    
+    // Apply party name search from the dropdown's input
+    if (partyNameSearch) {
+        sortableProducts = sortableProducts.filter(p =>
+            p.currentRate?.partyName?.toLowerCase().includes(partyNameSearch.toLowerCase())
+        );
+    }
 
-    // Apply party name filter
+    // Apply party name filter from checkboxes
     if (partyNameFilter.length > 0) {
       sortableProducts = sortableProducts.filter(p =>
         p.currentRate?.partyName && partyNameFilter.includes(p.currentRate.partyName)
@@ -158,7 +163,7 @@ export default function ProductTable() {
       });
     }
     return sortableProducts;
-  }, [products, sortConfig, productNameSearch, partyNameFilter, gstFilter, unitFilter]);
+  }, [products, sortConfig, productNameSearch, partyNameSearch, partyNameFilter, gstFilter, unitFilter]);
 
 
   const handleProductAdded = () => {
@@ -203,7 +208,7 @@ export default function ProductTable() {
   };
   
   const handleSelectAllParties = () => {
-    const allVisiblePartyNames = filteredAndSortedPartyNames.map(p => p);
+    const allVisiblePartyNames = filteredPartyNamesForDropdown.map(p => p);
     const allSelected = allVisiblePartyNames.every(name => partyNameFilter.includes(name));
 
     if (allSelected) {
@@ -432,16 +437,16 @@ export default function ProductTable() {
                           </div>
                           <DropdownMenuSeparator />
                           <ScrollArea className="h-[200px]">
-                            {filteredAndSortedPartyNames.length > 0 && (
+                            {filteredPartyNamesForDropdown.length > 0 && (
                               <DropdownMenuCheckboxItem
                                 onSelect={(e) => e.preventDefault()}
                                 onClick={handleSelectAllParties}
-                                checked={filteredAndSortedPartyNames.every(name => partyNameFilter.includes(name))}
+                                checked={filteredPartyNamesForDropdown.every(name => partyNameFilter.includes(name))}
                               >
-                                {filteredAndSortedPartyNames.every(name => partyNameFilter.includes(name)) ? 'Deselect All' : 'Select All'}
+                                {filteredPartyNamesForDropdown.every(name => partyNameFilter.includes(name)) ? 'Deselect All' : 'Select All'}
                               </DropdownMenuCheckboxItem>
                             )}
-                           {filteredAndSortedPartyNames.map(partyName => (
+                           {filteredPartyNamesForDropdown.map(partyName => (
                               <DropdownMenuCheckboxItem
                                 key={partyName}
                                 checked={partyNameFilter.includes(partyName)}
@@ -452,12 +457,12 @@ export default function ProductTable() {
                               </DropdownMenuCheckboxItem>
                           ))}
                           </ScrollArea>
-                           {filteredAndSortedPartyNames.length === 0 && partyNameSearch !== '' && (
+                           {filteredPartyNamesForDropdown.length === 0 && (
                             <div className="px-2 py-1.5 text-sm text-muted-foreground">
                               No party found.
                             </div>
                           )}
-                          {partyNameFilter.length > 0 && (
+                          {(partyNameFilter.length > 0 || partyNameSearch !== '') && (
                             <>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
