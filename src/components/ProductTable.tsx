@@ -255,9 +255,9 @@ export default function ProductTable() {
   return (
     <Card className="shadow-lg bg-card/80 backdrop-blur-sm card">
       <CardHeader className="no-print">
-        <div className="flex flex-col items-center gap-4">
-          <CardTitle className="font-headline text-center text-primary w-full">Goods Rate Register</CardTitle>
-          <div className="w-full flex flex-col sm:flex-row justify-between items-center gap-2">
+        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle className="font-headline text-primary">Goods Rate Register</CardTitle>
+          <div className="w-full flex flex-col sm:flex-row justify-end items-center gap-2">
             <div className="relative w-full sm:flex-1 sm:max-w-xs">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -604,4 +604,5 @@ export default function ProductTable() {
   );
 }
 
+    
     
