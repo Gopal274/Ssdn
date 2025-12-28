@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { IProduct } from '@/models/Product';
-import { PlusCircle, Loader2, ArrowUpDown, Filter, Search, Printer } from 'lucide-react';
+import { PlusCircle, Loader2, ArrowUpDown, Filter, Search, Printer, SortAsc, SortDesc } from 'lucide-react';
 
 import {
   Table,
@@ -29,6 +29,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { ProductTableRow } from './ProductTableRow';
 import { AddProductForm } from './AddProductForm';
+import { ScrollArea } from './ui/scroll-area';
 
 type SortKey = 'productName' | 'updatedAt' | 'rate';
 type SortDirection = 'asc' | 'desc';
@@ -46,6 +47,7 @@ export default function ProductTable() {
   const [productNameSearch, setProductNameSearch] = useState('');
   const [partyNameFilter, setPartyNameFilter] = useState<string[]>([]);
   const [partyNameSearch, setPartyNameSearch] = useState('');
+  const [partySortDir, setPartySortDir] = useState<SortDirection>('asc');
   const [gstFilter, setGstFilter] = useState<number[]>([]);
   const [unitFilter, setUnitFilter] = useState<string[]>([]);
 
@@ -53,7 +55,7 @@ export default function ProductTable() {
     const names = products
       .map(p => p.currentRate?.partyName)
       .filter((name): name is string => !!name);
-    return [...new Set(names)].sort((a, b) => a.localeCompare(b));
+    return [...new Set(names)];
   }, [products]);
 
   const uniqueUnits = useMemo(() => {
@@ -61,11 +63,19 @@ export default function ProductTable() {
     return [...new Set(units)].sort((a, b) => a.localeCompare(b));
   }, [products]);
 
-  const filteredPartyNames = useMemo(() => {
-    return uniquePartyNames.filter(name =>
-      name.toLowerCase().includes(partyNameSearch.toLowerCase())
-    );
-  }, [uniquePartyNames, partyNameSearch]);
+  const filteredAndSortedPartyNames = useMemo(() => {
+    return uniquePartyNames
+      .filter(name =>
+        name.toLowerCase().includes(partyNameSearch.toLowerCase())
+      )
+      .sort((a, b) => {
+        if (partySortDir === 'asc') {
+          return a.localeCompare(b);
+        } else {
+          return b.localeCompare(a);
+        }
+      });
+  }, [uniquePartyNames, partyNameSearch, partySortDir]);
 
 
   const fetchProducts = useCallback(async () => {
@@ -190,6 +200,19 @@ export default function ProductTable() {
         ? prev.filter(g => g !== gstSlab)
         : [...prev, gstSlab]
     );
+  };
+  
+  const handleSelectAllParties = () => {
+    const allVisiblePartyNames = filteredAndSortedPartyNames.map(p => p);
+    const allSelected = allVisiblePartyNames.every(name => partyNameFilter.includes(name));
+
+    if (allSelected) {
+      // Deselect all
+      setPartyNameFilter([]);
+    } else {
+      // Select all visible
+      setPartyNameFilter([...new Set([...partyNameFilter, ...allVisiblePartyNames])]);
+    }
   };
 
 
@@ -393,16 +416,32 @@ export default function ProductTable() {
                           onCloseAutoFocus={(e) => e.preventDefault()}
                         >
                           <DropdownMenuLabel>Filter by Party</DropdownMenuLabel>
-                          <div className="px-2 pb-2">
+                           <div className="px-2 pt-2 pb-1 flex items-center gap-1">
                              <Input
                                 placeholder="Search party..."
                                 value={partyNameSearch}
                                 onChange={(e) => setPartyNameSearch(e.target.value)}
                                 className="h-8"
                               />
+                              <Button variant="ghost" size="icon" className='h-8 w-8 shrink-0' onClick={() => setPartySortDir('asc')} disabled={partySortDir === 'asc'}>
+                                <SortAsc className='h-4 w-4'/>
+                              </Button>
+                               <Button variant="ghost" size="icon" className='h-8 w-8 shrink-0' onClick={() => setPartySortDir('desc')} disabled={partySortDir === 'desc'}>
+                                <SortDesc className='h-4 w-4'/>
+                              </Button>
                           </div>
                           <DropdownMenuSeparator />
-                           {filteredPartyNames.map(partyName => (
+                          <ScrollArea className="h-[200px]">
+                            {filteredAndSortedPartyNames.length > 0 && (
+                              <DropdownMenuCheckboxItem
+                                onSelect={(e) => e.preventDefault()}
+                                onClick={handleSelectAllParties}
+                                checked={filteredAndSortedPartyNames.every(name => partyNameFilter.includes(name))}
+                              >
+                                {filteredAndSortedPartyNames.every(name => partyNameFilter.includes(name)) ? 'Deselect All' : 'Select All'}
+                              </DropdownMenuCheckboxItem>
+                            )}
+                           {filteredAndSortedPartyNames.map(partyName => (
                               <DropdownMenuCheckboxItem
                                 key={partyName}
                                 checked={partyNameFilter.includes(partyName)}
@@ -412,7 +451,8 @@ export default function ProductTable() {
                                 {partyName}
                               </DropdownMenuCheckboxItem>
                           ))}
-                           {filteredPartyNames.length === 0 && partyNameSearch !== '' && (
+                          </ScrollArea>
+                           {filteredAndSortedPartyNames.length === 0 && partyNameSearch !== '' && (
                             <div className="px-2 py-1.5 text-sm text-muted-foreground">
                               No party found.
                             </div>
@@ -469,3 +509,5 @@ export default function ProductTable() {
     </Card>
   );
 }
+
+    
