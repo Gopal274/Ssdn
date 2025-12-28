@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { calculateFinalRate } from '@/lib/utils';
 
 const formSchema = z.object({
   productName: z.string().min(2, 'Product name must be at least 2 characters.'),
@@ -46,10 +45,13 @@ export function AddProductForm({ onProductAdded }: AddProductFormProps) {
 
   const onSubmit: SubmitHandler<FormValues> = async (values) => {
     setIsSubmitting(true);
-    const finalRate = calculateFinalRate(values.rate, values.gst);
     
-    // Pass the date string as is, let the backend handle it.
-    const payload = { ...values, finalRate };
+    // Ensure empty strings are not sent for optional fields
+    const payload = { 
+        ...values,
+        billDate: values.billDate || undefined,
+        pageNo: values.pageNo || undefined,
+    };
 
     try {
       const response = await fetch('/api/product', {
@@ -160,7 +162,7 @@ export function AddProductForm({ onProductAdded }: AddProductFormProps) {
                   <FormItem>
                   <FormLabel>Bill Date</FormLabel>
                   <FormControl>
-                      <Input placeholder="dd/mm/yy" {...field} />
+                      <Input type="date" {...field} />
                   </FormControl>
                   <FormMessage />
                   </FormItem>

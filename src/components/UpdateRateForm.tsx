@@ -32,31 +32,26 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const formatDateForInput = (date?: Date | string) => {
-    if (!date) return '';
-    try {
-      return new Date(date).toLocaleDateString('en-CA'); // YYYY-MM-DD
-    } catch {
-      return '';
-    }
-  };
-
-
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       rate: product.currentRate?.rate ?? 0,
       gst: product.currentRate?.gst ?? 0,
       partyName: product.currentRate?.partyName ?? '',
-      billDate: product.currentRate?.billDate ? new Date(product.currentRate.billDate).toLocaleDateString('en-GB').replace(/\//g, '/') : '',
+      billDate: product.currentRate?.billDate ? new Date(product.currentRate.billDate).toLocaleDateString('fr-CA') : '', // YYYY-MM-DD
       pageNo: product.currentRate?.pageNo ?? '',
     },
   });
 
   const onSubmit: SubmitHandler<FormValues> = async (values) => {
     setIsSubmitting(true);
-    const finalRate = calculateFinalRate(values.rate, values.gst);
-    const payload = { ...values, finalRate };
+    
+    // Ensure empty strings are not sent, but allow valid date strings
+    const payload = { 
+        ...values,
+        billDate: values.billDate || undefined,
+        pageNo: values.pageNo || undefined,
+    };
 
     try {
       const response = await fetch(`/api/product/${product._id}/update-rate`, {
@@ -155,7 +150,7 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
                     <FormItem>
                     <FormLabel>Bill Date</FormLabel>
                     <FormControl>
-                        <Input placeholder="dd/mm/yy" {...field} />
+                        <Input type="date" placeholder="YYYY-MM-DD" {...field} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
