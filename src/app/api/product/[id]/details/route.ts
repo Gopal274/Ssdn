@@ -24,17 +24,23 @@ export async function PUT(
     }
 
     // Update only the provided fields in the currentRate
+    let changed = false;
     if (body.billDate !== undefined) {
         product.currentRate.billDate = body.billDate || undefined;
+        changed = true;
     }
     if (body.pageNo !== undefined) {
         product.currentRate.pageNo = body.pageNo || undefined;
+        changed = true;
     }
     if (body.category !== undefined) {
         product.currentRate.category = body.category || undefined;
+        changed = true;
     }
 
-    await product.save();
+    if (changed) {
+      await product.save();
+    }
 
     return NextResponse.json({ success: true, data: product });
   } catch (error) {
