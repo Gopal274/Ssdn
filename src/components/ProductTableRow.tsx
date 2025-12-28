@@ -117,7 +117,7 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
             <TableCell>{index + 1}</TableCell>
             <TableCell>{product.productName}</TableCell>
             <TableCell colSpan={8} className="text-muted-foreground">Product data is incomplete.</TableCell>
-             <TableCell className="text-center">
+             <TableCell className="text-center no-print">
                 <div className="flex items-center justify-center space-x-1">
                   <Dialog open={isUpdateModalOpen} onOpenChange={setUpdateModalOpen}>
                     <DialogTrigger asChild>
@@ -166,9 +166,9 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
         <TableCell>
           <div className="flex items-center gap-2">
             {hasHistory ? (
-              <ChevronRight className={cn('h-4 w-4 transition-transform', isHistoryOpen && 'rotate-90')} />
+              <ChevronRight className={cn('h-4 w-4 transition-transform no-print', isHistoryOpen && 'rotate-90')} />
             ) : (
-              <span className="w-4" />
+              <span className="w-4 no-print" />
             )}
             {index + 1}
           </div>
@@ -199,7 +199,7 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
         <TableCell>{product.currentRate.billDate ? new Date(product.currentRate.billDate).toLocaleDateString() : '-'}</TableCell>
         <TableCell>{product.currentRate.pageNo || '-'}</TableCell>
         <TableCell>{product.currentRate.category || '-'}</TableCell>
-        <TableCell className="text-center">
+        <TableCell className="text-center no-print">
           <div className="flex items-center justify-center space-x-1">
             <Dialog open={isUpdateModalOpen} onOpenChange={setUpdateModalOpen}>
               <DialogTrigger asChild>
@@ -263,7 +263,7 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
           <TableCell>{history.billDate ? new Date(history.billDate).toLocaleDateString() : '-'}</TableCell>
           <TableCell>{history.pageNo || '-'}</TableCell>
           <TableCell>{history.category || '-'}</TableCell>
-          <TableCell className="text-center">
+          <TableCell className="text-center no-print">
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="ghost" size="icon" title="Delete History Entry" className="h-6 w-6" onClick={(e) => e.stopPropagation()}>

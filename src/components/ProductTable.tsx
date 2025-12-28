@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { IProduct } from '@/models/Product';
-import { PlusCircle, Loader2, ArrowUpDown, Filter, Search } from 'lucide-react';
+import { PlusCircle, Loader2, ArrowUpDown, Filter, Search, Printer } from 'lucide-react';
 
 import {
   Table,
@@ -194,8 +194,8 @@ export default function ProductTable() {
 
 
   return (
-    <Card className="shadow-lg bg-card/80 backdrop-blur-sm">
-      <CardHeader>
+    <Card className="shadow-lg bg-card/80 backdrop-blur-sm card">
+      <CardHeader className="no-print">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <CardTitle className="font-headline">Goods Rate Register</CardTitle>
           <div className="flex w-full sm:w-auto sm:justify-end gap-2">
@@ -208,6 +208,9 @@ export default function ProductTable() {
                 className="pl-8"
               />
             </div>
+            <Button variant="outline" onClick={() => window.print()} className="shrink-0">
+                <Printer className="mr-2 h-4 w-4" /> Print
+            </Button>
             <Dialog open={isAddModalOpen} onOpenChange={setAddModalOpen}>
               <DialogTrigger asChild>
                 <Button className="shrink-0">
@@ -252,7 +255,7 @@ export default function ProductTable() {
                   <TableHead className="font-bold text-foreground min-w-[200px]">
                      <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="-ml-4 h-8">
+                        <Button variant="ghost" className="-ml-4 h-8 no-print">
                           Product Name
                           <ArrowUpDown className="ml-2 h-4 w-4" />
                         </Button>
@@ -276,7 +279,7 @@ export default function ProductTable() {
                   <TableHead className="text-right font-bold text-foreground min-w-[120px]">
                      <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8">
+                          <Button variant="ghost" className="h-8 no-print">
                             Rate
                             <ArrowUpDown className="ml-2 h-4 w-4" />
                           </Button>
@@ -296,7 +299,7 @@ export default function ProductTable() {
                       Unit
                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-7 w-7" disabled={uniqueUnits.length === 0}>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 no-print" disabled={uniqueUnits.length === 0}>
                               <Filter className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -336,7 +339,7 @@ export default function ProductTable() {
                        GST %
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-7 w-7">
+                          <Button variant="ghost" size="icon" className="h-7 w-7 no-print">
                               <Filter className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -377,7 +380,7 @@ export default function ProductTable() {
                        Party Name
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-7 w-7" disabled={uniquePartyNames.length === 0}>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 no-print" disabled={uniquePartyNames.length === 0}>
                               <Filter className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -432,7 +435,7 @@ export default function ProductTable() {
                   <TableHead className="font-bold text-foreground min-w-[130px]">Bill Date</TableHead>
                   <TableHead className="font-bold text-foreground min-w-[120px]">Page No.</TableHead>
                   <TableHead className="font-bold text-foreground min-w-[150px]">Category</TableHead>
-                  <TableHead className="text-center w-[100px] font-bold text-foreground">Actions</TableHead>
+                  <TableHead className="text-center w-[100px] font-bold text-foreground no-print">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
