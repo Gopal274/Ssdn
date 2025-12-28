@@ -106,7 +106,7 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
         <TableRow>
             <TableCell>{index + 1}</TableCell>
             <TableCell>{product.productName}</TableCell>
-            <TableCell colSpan={5} className="text-muted-foreground">Product data is incomplete.</TableCell>
+            <TableCell colSpan={8} className="text-muted-foreground">Product data is incomplete.</TableCell>
              <TableCell className="text-center">
                 <div className="flex items-center justify-center space-x-1">
                   <Dialog open={isUpdateModalOpen} onOpenChange={setUpdateModalOpen}>
@@ -175,6 +175,9 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
           {product.currentRate.finalRate.toFixed(2)}
         </TableCell>
         <TableCell>{product.currentRate.partyName}</TableCell>
+        <TableCell>{product.currentRate.billDate ? new Date(product.currentRate.billDate).toLocaleDateString() : '-'}</TableCell>
+        <TableCell>{product.currentRate.pageNo || '-'}</TableCell>
+        <TableCell>{product.currentRate.category || '-'}</TableCell>
         <TableCell className="text-center">
           <div className="flex items-center justify-center space-x-1">
             <Dialog open={isUpdateModalOpen} onOpenChange={setUpdateModalOpen}>
@@ -223,6 +226,9 @@ export function ProductTableRow({ product, index, onRateUpdated, onProductDelete
           <TableCell className="text-right">{history.gst.toFixed(2)}%</TableCell>
           <TableCell className="text-right font-medium">{history.finalRate.toFixed(2)}</TableCell>
           <TableCell>{history.partyName}</TableCell>
+          <TableCell>{history.billDate ? new Date(history.billDate).toLocaleDateString() : '-'}</TableCell>
+          <TableCell>{history.pageNo || '-'}</TableCell>
+          <TableCell>{history.category || '-'}</TableCell>
           <TableCell className="text-center">
             <AlertDialog>
               <AlertDialogTrigger asChild>

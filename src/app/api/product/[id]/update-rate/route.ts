@@ -13,7 +13,7 @@ export async function PUT(
   try {
     await dbConnect();
     const body = await request.json();
-    const { rate, gst, partyName } = body;
+    const { rate, gst, partyName, billDate, pageNo, category } = body;
 
     if (rate === undefined || gst === undefined || !partyName) {
         return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
@@ -38,6 +38,9 @@ export async function PUT(
       finalRate,
       partyName,
       updatedAt: new Date(),
+      billDate: billDate || undefined,
+      pageNo: pageNo || undefined,
+      category: category || undefined,
     };
 
     await product.save();

@@ -424,13 +424,16 @@ export default function ProductTable() {
                       </DropdownMenu>
                     </div>
                   </TableHead>
+                  <TableHead className="font-bold text-foreground">Bill Date</TableHead>
+                  <TableHead className="font-bold text-foreground">Page No.</TableHead>
+                  <TableHead className="font-bold text-foreground">Category</TableHead>
                   <TableHead className="text-center w-[120px] font-bold text-foreground">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center">
+                    <TableCell colSpan={11} className="h-24 text-center">
                       <div className="flex justify-center items-center">
                         <Loader2 className="h-6 w-6 animate-spin text-primary" />
                         <span className="ml-2">Loading ledger...</span>
@@ -455,5 +458,3 @@ export default function ProductTable() {
     </Card>
   );
 }
-
-    

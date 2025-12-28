@@ -11,11 +11,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from './ui/card';
+import { formatDateForInput } from '@/lib/utils';
+
 
 const formSchema = z.object({
   rate: z.coerce.number().positive('Rate must be a positive number.'),
   gst: z.coerce.number().min(0, 'GST must be 0 or more.'),
   partyName: z.string().min(2, 'Party name must be at least 2 characters.'),
+  billDate: z.string().optional(),
+  pageNo: z.string().optional(),
+  category: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -35,17 +40,27 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
       rate: product.currentRate?.rate ?? 0,
       gst: product.currentRate?.gst ?? 0,
       partyName: product.currentRate?.partyName ?? '',
+      billDate: formatDateForInput(product.currentRate?.billDate),
+      pageNo: product.currentRate?.pageNo ?? '',
+      category: product.currentRate?.category ?? '',
     },
   });
 
   const onSubmit: SubmitHandler<FormValues> = async (values) => {
     setIsSubmitting(true);
+    
+    const submittedValues = {
+      ...values,
+      billDate: values.billDate || undefined,
+      pageNo: values.pageNo || undefined,
+      category: values.category || undefined,
+    }
 
     try {
       const response = await fetch(`/api/product/${product._id}/update-rate`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
+        body: JSON.stringify(submittedValues),
       });
 
       const result = await response.json();
@@ -80,6 +95,9 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
                     <span>GST: {product.currentRate.gst.toFixed(2)}%</span>
                     <span>Final: {product.currentRate.finalRate.toFixed(2)}</span>
                     <span>Party: {product.currentRate.partyName}</span>
+                    {product.currentRate.billDate && <span>Bill Date: {new Date(product.currentRate.billDate).toLocaleDateString()}</span>}
+                    {product.currentRate.pageNo && <span>Page No: {product.currentRate.pageNo}</span>}
+                    {product.currentRate.category && <span>Category: {product.currentRate.category}</span>}
                 </div>
             </CardContent>
         </Card>
@@ -123,6 +141,47 @@ export function UpdateRateForm({ product, onRateUpdated }: UpdateRateFormProps) 
                 <FormLabel>New Party Name</FormLabel>
                 <FormControl>
                   <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="billDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bill Date (Optional)</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="pageNo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Page No. (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., F-123" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <FormField
+            control={form.control}
+            name="category"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Category (Optional)</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., Spices" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
