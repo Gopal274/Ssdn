@@ -29,7 +29,7 @@ export default function ProductTable() {
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/products');
+      const res = await fetch('/api/products', { cache: 'no-store' });
       if (!res.ok) {
         throw new Error('Failed to fetch products');
       }
@@ -55,6 +55,10 @@ export default function ProductTable() {
   const handleRateUpdated = () => {
     fetchProducts();
   };
+
+  const handleProductDeleted = (deletedProductId: string) => {
+    setProducts(prevProducts => prevProducts.filter(p => p._id !== deletedProductId));
+  }
 
   return (
     <Card className="shadow-lg bg-card/80 backdrop-blur-sm">
@@ -87,7 +91,6 @@ export default function ProductTable() {
               )}
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-12 sticky left-0 bg-card/80 backdrop-blur-sm"></TableHead>
                   <TableHead className="w-[50px]">S.No</TableHead>
                   <TableHead>Product Name</TableHead>
                   <TableHead className="text-right">Rate</TableHead>
@@ -101,7 +104,7 @@ export default function ProductTable() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="h-24 text-center">
+                    <TableCell colSpan={8} className="h-24 text-center">
                       <div className="flex justify-center items-center">
                         <Loader2 className="h-6 w-6 animate-spin text-primary" />
                         <span className="ml-2">Loading ledger...</span>
@@ -115,6 +118,7 @@ export default function ProductTable() {
                       product={product}
                       index={index}
                       onRateUpdated={handleRateUpdated}
+                      onProductDeleted={handleProductDeleted}
                     />
                   ))
                 )}

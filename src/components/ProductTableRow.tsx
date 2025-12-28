@@ -3,44 +3,75 @@
 import { useState, Fragment } from 'react';
 import type { IProduct } from '@/models/Product';
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
-import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, PlusSquare } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { PlusSquare, Trash2 } from 'lucide-react';
 import { UpdateRateForm } from './UpdateRateForm';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProductTableRowProps {
   product: IProduct;
   index: number;
   onRateUpdated: () => void;
+  onProductDeleted: (productId: string) => void;
 }
 
-export function ProductTableRow({ product, index, onRateUpdated }: ProductTableRowProps) {
-  const [isHistoryOpen, setHistoryOpen] = useState(false);
+export function ProductTableRow({ product, index, onRateUpdated, onProductDeleted }: ProductTableRowProps) {
   const [isUpdateModalOpen, setUpdateModalOpen] = useState(false);
+  const { toast } = useToast();
 
   const handleUpdateSuccess = () => {
     setUpdateModalOpen(false);
     onRateUpdated();
   };
 
+  const handleDelete = async () => {
+    try {
+      const response = await fetch(`/api/product/${product._id}`, {
+        method: 'DELETE',
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to delete product');
+      }
+      toast({
+        title: 'Product Deleted',
+        description: `"${product.productName}" has been removed.`,
+      });
+      onProductDeleted(product._id);
+    } catch (error) {
+       toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Could not delete product.',
+        variant: 'destructive',
+      });
+    }
+  };
+  
   const hasHistory = product.rateHistory && product.rateHistory.length > 0;
 
   if (!product.currentRate) {
-    return (
+    // This case should ideally not happen with valid data, but it's a good safeguard.
+     return (
         <TableRow>
-            <TableCell></TableCell>
             <TableCell>{index + 1}</TableCell>
             <TableCell>{product.productName}</TableCell>
             <TableCell colSpan={5} className="text-muted-foreground">Product data is incomplete.</TableCell>
@@ -65,17 +96,7 @@ export function ProductTableRow({ product, index, onRateUpdated }: ProductTableR
 
   return (
     <Fragment>
-      <TableRow className={cn('font-medium', isHistoryOpen && 'border-b-0')}>
-        <TableCell className="sticky left-0 bg-card">
-          {hasHistory && (
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="w-9 p-0" onClick={() => setHistoryOpen(!isHistoryOpen)}>
-                <ChevronDown className={cn('h-4 w-4 transition-transform', isHistoryOpen && 'rotate-180')} />
-                <span className="sr-only">Toggle history</span>
-              </Button>
-            </CollapsibleTrigger>
-          )}
-        </TableCell>
+      <TableRow className='font-medium bg-card hover:bg-card/90 border-b-2 border-background'>
         <TableCell>{index + 1}</TableCell>
         <TableCell>{product.productName}</TableCell>
         <TableCell className="text-right">
@@ -89,7 +110,7 @@ export function ProductTableRow({ product, index, onRateUpdated }: ProductTableR
           {product.currentRate.finalRate.toFixed(2)}
         </TableCell>
         <TableCell>{product.currentRate.partyName}</TableCell>
-        <TableCell className="text-center">
+        <TableCell className="text-center space-x-1">
           <Dialog open={isUpdateModalOpen} onOpenChange={setUpdateModalOpen}>
             <DialogTrigger asChild>
               <Button variant="ghost" size="icon" title="Update Rate">
@@ -103,32 +124,41 @@ export function ProductTableRow({ product, index, onRateUpdated }: ProductTableR
               <UpdateRateForm product={product} onRateUpdated={handleUpdateSuccess} />
             </DialogContent>
           </Dialog>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="icon" title="Delete Product">
+                <Trash2 className="h-5 w-5 text-destructive" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the product "{product.productName}" and all of its rate history.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </TableCell>
       </TableRow>
-      {hasHistory && isHistoryOpen && (
-        <TableRow className="bg-muted/30 hover:bg-muted/40">
-          <TableCell colSpan={9} className="p-0">
-             <Collapsible open={isHistoryOpen} onOpenChange={setHistoryOpen}>
-                <CollapsibleContent>
-                    <div className="p-4">
-                    <h4 className="mb-2 text-sm font-semibold">Rate History</h4>
-                    <div className="grid gap-2">
-                        {product.rateHistory.map((history, i) => (
-                        <div key={i} className="grid grid-cols-5 gap-x-4 text-sm text-muted-foreground p-2 rounded-md bg-background">
-                            <div className="truncate"><strong>Rate:</strong> {history.rate.toFixed(2)}</div>
-                            <div className="truncate"><strong>GST:</strong> {history.gst.toFixed(2)}%</div>
-                            <div className="truncate"><strong>Final:</strong> {history.finalRate.toFixed(2)}</div>
-                            <div className="truncate col-span-1"><strong>Party:</strong> {history.partyName}</div>
-                            <div className="truncate"><strong>Date:</strong> {new Date(history.updatedAt).toLocaleDateString()}</div>
-                        </div>
-                        ))}
-                    </div>
-                    </div>
-                </CollapsibleContent>
-             </Collapsible>
+      {hasHistory && product.rateHistory.map((history, i) => (
+        <TableRow key={`${product._id}-history-${i}`} className="bg-muted/30 text-muted-foreground hover:bg-muted/40 text-xs">
+          <TableCell></TableCell>
+          <TableCell>
+            <span className="pl-4">↳ {new Date(history.updatedAt).toLocaleDateString()}</span>
           </TableCell>
+          <TableCell className="text-right">{history.rate.toFixed(2)}</TableCell>
+          <TableCell></TableCell>
+          <TableCell className="text-right">{history.gst.toFixed(2)}%</TableCell>
+          <TableCell className="text-right font-medium">{history.finalRate.toFixed(2)}</TableCell>
+          <TableCell>{history.partyName}</TableCell>
+          <TableCell></TableCell>
         </TableRow>
-      )}
+      ))}
     </Fragment>
   );
 }
